@@ -1,0 +1,22 @@
+# Editor
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs (keep edit-log for debugging)
+*.log
+!.claude/edit-log.txt
+
+# Local overrides
+.claude/settings.local.json
+CLAUDE.local.md
+
+# Secrets
+.env
+.env.*
+!.env.example

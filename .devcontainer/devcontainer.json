@@ -1,0 +1,50 @@
+{
+  "name": "jadecli-codespaces",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "configureZshAsDefaultShell": true,
+      "installOhMyZsh": true
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "lts"
+    },
+    "ghcr.io/devcontainers-contrib/features/mise:1": {}
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "GitHub.copilot",
+        "yzhang.markdown-all-in-one",
+        "bierner.markdown-mermaid",
+        "esbenp.prettier-vscode"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "editor.formatOnSave": true,
+        "files.trimTrailingWhitespace": true,
+        "[markdown]": {
+          "editor.wordWrap": "on",
+          "editor.quickSuggestions": false
+        }
+      }
+    },
+    "codespaces": {
+      "openFiles": ["CLAUDE.md"]
+    }
+  },
+
+  "postCreateCommand": "npm install -g @anthropic-ai/claude-code && chmod +x .claude/hooks/*.sh scripts/*.sh",
+
+  "secrets": {
+    "ANTHROPIC_API_KEY": {
+      "description": "Anthropic API key for Claude Code"
+    }
+  },
+
+  "remoteUser": "vscode"
+}
