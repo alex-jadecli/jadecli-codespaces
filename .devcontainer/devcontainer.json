@@ -38,13 +38,14 @@
     }
   },
 
-  "postCreateCommand": "npm install -g @anthropic-ai/claude-code && chmod +x .claude/hooks/*.sh scripts/*.sh",
+  "postCreateCommand": "chmod +x .claude/hooks/*.sh scripts/*.sh",
 
-  "secrets": {
-    "ANTHROPIC_API_KEY": {
-      "description": "Anthropic API key for Claude Code"
-    }
-  },
+  "remoteUser": "vscode",
 
-  "remoteUser": "vscode"
+  "forwardPorts": [3000, 8000],
+
+  "portsAttributes": {
+    "3000": { "label": "Dev Server", "onAutoForward": "notify" },
+    "8000": { "label": "API", "onAutoForward": "notify" }
+  }
 }

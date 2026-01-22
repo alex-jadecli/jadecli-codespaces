@@ -146,9 +146,50 @@ Clone to `~/jadecli-codespaces` and sync regularly.
 
 ---
 
+## Accessing from Local Claude Code
+
+Use your existing Claude Code subscription to work in this Codespace.
+
+### Option 1: SSH into Codespace
+
+```bash
+# List your codespaces
+gh codespace list
+
+# SSH into the codespace
+gh codespace ssh -c <codespace-name>
+
+# Run Claude Code inside
+claude
+```
+
+### Option 2: Clone Locally + Sync
+
+```bash
+# Clone to local WSL
+cd ~
+git clone https://github.com/alex-jadecli/jadecli-codespaces.git
+
+# Work locally with Claude Code (your subscription)
+cd jadecli-codespaces
+claude
+
+# Sync changes
+./scripts/sync.sh
+```
+
+### Option 3: VS Code Remote
+
+1. Install "GitHub Codespaces" extension in VS Code
+2. Connect to codespace from VS Code
+3. Open terminal in VS Code
+4. Run `claude` (uses your subscription via VS Code terminal)
+
+---
+
 ## Getting Started
 
-1. Create a Codespace or clone locally
+1. Clone locally or SSH into Codespace
 2. Run `/lock-status` to see current state
 3. Use `/checkout` before any edits
 4. Use `/checkin` when done
