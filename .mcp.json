@@ -1,5 +1,5 @@
 {
-  "_comment": "Neon PostgreSQL MCP configuration for entity store",
+  "_comment": "MCP server configuration for entity store and Parallel.ai",
   "_entity_id": "config-mcp",
   "_entity_name": "MCP Server Configuration",
   "_entity_type_id": "config",
@@ -14,6 +14,13 @@
       "args": ["-y", "@neondatabase/mcp-server-neon", "start"],
       "env": {
         "NEON_API_KEY": "${NEON_API_KEY}"
+      }
+    },
+    "parallel-ai": {
+      "command": "python",
+      "args": ["-m", "parallel_api.mcp_server"],
+      "env": {
+        "PARALLEL_APIKEY": "${PARALLEL_APIKEY}"
       }
     }
   }
