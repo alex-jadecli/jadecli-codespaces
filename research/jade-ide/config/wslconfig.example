@@ -1,0 +1,60 @@
+# ---
+# entity_id: config-wslconfig-example
+# entity_name: WSL Configuration Template for Jade IDE
+# entity_type_id: config
+# entity_path: research/jade-ide/config/wslconfig.example
+# entity_language: ini
+# entity_state: active
+# entity_created: 2026-01-23T00:00:00Z
+# entity_actors: [dev]
+# ---
+
+# WSL2 Configuration for Jade IDE Development
+# Location: %USERPROFILE%\.wslconfig (Windows side)
+#
+# System: 128GB RAM, 24 threads, 11GB VRAM
+# Allocates ~75% resources to WSL, reserves rest for Windows host
+
+[wsl2]
+# Memory allocation (96GB for WSL, 32GB for Windows)
+memory=96GB
+
+# CPU allocation (20 threads for WSL, 4 for Windows)
+processors=20
+
+# Swap file (useful for loading large models)
+swap=32GB
+swapFile=C:\\wsl-swap.vhdx
+
+# Enable localhost forwarding for Ollama, Claude, etc.
+localhostForwarding=true
+
+# GPU passthrough for CUDA
+# (Requires Windows 11 or Windows 10 21H2+ with WSL2 GPU support)
+# gpuSupport=true
+
+# Network mode (mirrored gives better performance)
+# networkingMode=mirrored
+
+# DNS settings
+# dnsTunneling=true
+
+[experimental]
+# Automatic memory reclaim when idle
+autoMemoryReclaim=gradual
+
+# Sparse VHD for better disk management
+sparseVhd=true
+
+# Nested virtualization (needed for Docker in WSL)
+nestedVirtualization=true
+
+# Use Windows DNS proxy
+# useWindowsDnsCache=true
+
+# Firewall integration
+# firewall=true
+
+[boot]
+# Run commands at WSL startup
+# command = /etc/init.d/ollama start

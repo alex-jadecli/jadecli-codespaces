@@ -1,0 +1,23 @@
+{
+  "$schema": "https://claude.ai/schemas/settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(pytest *)",
+      "Bash(ruff *)",
+      "Bash(mypy *)",
+      "Edit(entity_store/**)",
+      "Edit(agents/**)",
+      "Edit(cli/**)"
+    ]
+  },
+  "preferences": {
+    "autoApprovePatterns": [
+      "tests/**/*.py"
+    ]
+  },
+  "project": {
+    "name": "jadecli-codespaces",
+    "pythonVersion": "3.12",
+    "entityStore": true
+  }
+}
