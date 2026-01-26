@@ -1,0 +1,146 @@
+# ---
+# entity_id: config-chezmoi-example
+# entity_name: Chezmoi Configuration Template for Jade IDE
+# entity_type_id: config
+# entity_path: research/jade-ide/config/chezmoi.toml.example
+# entity_language: toml
+# entity_state: active
+# entity_created: 2026-01-23T00:00:00Z
+# entity_dependencies: [chezmoi, age, 1password-cli]
+# entity_actors: [dev]
+# ---
+
+# Chezmoi Configuration for Jade IDE Development
+# Location: ~/.config/chezmoi/chezmoi.toml
+#
+# Documentation: https://www.chezmoi.io/reference/configuration-file/
+
+#==============================================================================
+# SOURCE DIRECTORY
+#==============================================================================
+
+# Where chezmoi stores its source state
+sourceDir = "~/.local/share/chezmoi"
+
+#==============================================================================
+# GIT CONFIGURATION
+#==============================================================================
+
+[git]
+    # Auto commit changes
+    autoCommit = false
+
+    # Auto push after apply
+    autoPush = false
+
+    # Command to use for git
+    command = "git"
+
+#==============================================================================
+# DIFF CONFIGURATION
+#==============================================================================
+
+[diff]
+    # Use external diff tool
+    command = "code"
+    args = ["--wait", "--diff"]
+
+    # Pager for diff output
+    pager = "less"
+
+#==============================================================================
+# MERGE CONFIGURATION
+#==============================================================================
+
+[merge]
+    command = "code"
+    args = ["--wait"]
+
+#==============================================================================
+# TEMPLATE DATA
+#==============================================================================
+
+[data]
+    # Machine type for conditional templates
+    # Options: personal, work, server
+    machine_type = "work"
+
+    # Organization
+    org = "jade-ide"
+
+    # Claude Code configuration
+    claude_model = "claude-sonnet-4-20250514"
+    claude_max_tokens = 200000
+
+    # Feature flags
+    enable_ollama = true
+    enable_mcp = true
+
+[data.git]
+    email = "your-email@jade-ide.dev"
+    name = "Your Name"
+    signingkey = ""
+
+#==============================================================================
+# ENCRYPTION (AGE)
+#==============================================================================
+
+[age]
+    # Identity file for decryption
+    identity = "~/.config/sops/age/keys.txt"
+
+    # Recipients for encryption
+    recipient = "age1..."
+
+#==============================================================================
+# 1PASSWORD INTEGRATION
+#==============================================================================
+
+# Uncomment to use 1Password for secrets
+# [onepassword]
+#     command = "op"
+#     prompt = false
+
+#==============================================================================
+# BITWARDEN INTEGRATION
+#==============================================================================
+
+# Uncomment to use Bitwarden for secrets
+# [bitwarden]
+#     command = "bw"
+
+#==============================================================================
+# HOOKS
+#==============================================================================
+
+[hooks.read-source-state.pre]
+    # Run before reading source state
+    # command = "git"
+    # args = ["-C", "~/.local/share/chezmoi", "pull", "--rebase"]
+
+#==============================================================================
+# CD COMMAND
+#==============================================================================
+
+[cd]
+    # Command to run when using 'chezmoi cd'
+    command = "zsh"
+
+#==============================================================================
+# EDIT COMMAND
+#==============================================================================
+
+[edit]
+    # Editor for 'chezmoi edit'
+    command = "code"
+    args = ["--wait"]
+
+#==============================================================================
+# INTERPRETERS
+#==============================================================================
+
+[interpreters.py]
+    command = "python3"
+
+[interpreters.sh]
+    command = "bash"
