@@ -17,11 +17,10 @@ Defines the core Entity model and supporting types used throughout
 the entity indexing system.
 """
 
-from datetime import datetime
-from enum import Enum
-from typing import Literal, Optional
-from uuid import UUID, uuid4
 import hashlib
+from datetime import datetime, timezone
+from enum import Enum
+from uuid import UUID, uuid4
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -64,24 +63,22 @@ class Entity(BaseModel):
     entity_name: str = Field(..., min_length=1)
     entity_type_id: EntityType
     entity_frontmatter_signature: str = Field(default="")
-    entity_last_updated: datetime = Field(default_factory=datetime.utcnow)
+    entity_last_updated: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     entity_state: EntityState = EntityState.ACTIVE
-    entity_created: datetime = Field(default_factory=datetime.utcnow)
+    entity_created: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     # Extended fields
     entity_path: str = Field(..., min_length=1)
     entity_line_start: int = Field(ge=1)
-    entity_line_end: Optional[int] = Field(default=None, ge=1)
-    entity_parent_id: Optional[UUID] = None
+    entity_line_end: int | None = Field(default=None, ge=1)
+    entity_parent_id: UUID | None = None
     entity_language: str = Field(default="python")
-    entity_signature: Optional[str] = None
-    entity_docstring: Optional[str] = None
+    entity_signature: str | None = None
+    entity_docstring: str | None = None
     entity_metadata: dict = Field(default_factory=dict)
 
     @classmethod
-    def compute_signature(
-        cls, path: str, name: str, type_id: str, source: str
-    ) -> str:
+    def compute_signature(cls, path: str, name: str, type_id: str, source: str) -> str:
         """Compute deterministic signature for change detection."""
         content = f"{path}:{name}:{type_id}:{source}"
         return hashlib.sha256(content.encode()).hexdigest()[:16]

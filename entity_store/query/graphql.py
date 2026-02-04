@@ -21,9 +21,9 @@ Provides a flexible query API that reduces token usage:
 """
 
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any
 
-from entity_store.models import Entity, EntityState, EntityType
+from entity_store.models import Entity
 from entity_store.registry import EntityRegistry
 
 
@@ -55,14 +55,14 @@ class EntityQuery:
 
     def query(
         self,
-        type_id: Optional[str] = None,
-        name_pattern: Optional[str] = None,
-        path_pattern: Optional[str] = None,
+        type_id: str | None = None,
+        name_pattern: str | None = None,
+        path_pattern: str | None = None,
         state: str = "active",
-        fields: Optional[list[str]] = None,
+        fields: list[str] | None = None,
         limit: int = 100,
         offset: int = 0,
-        order_by: Optional[str] = None,
+        order_by: str | None = None,
         order_desc: bool = False,
     ) -> QueryResult:
         """
@@ -90,7 +90,7 @@ class EntityQuery:
     def search(
         self,
         query_text: str,
-        fields: Optional[list[str]] = None,
+        fields: list[str] | None = None,
         limit: int = 20,
     ) -> QueryResult:
         """
@@ -110,7 +110,7 @@ class EntityQuery:
         self,
         root_id: str,
         max_depth: int = 10,
-        fields: Optional[list[str]] = None,
+        fields: list[str] | None = None,
     ) -> list[dict[str, Any]]:
         """
         Get entity hierarchy starting from root.
@@ -125,9 +125,7 @@ class EntityQuery:
         """
         raise NotImplementedError("get_hierarchy not yet implemented")
 
-    def _project_fields(
-        self, entity: Entity, fields: list[str]
-    ) -> dict[str, Any]:
+    def _project_fields(self, entity: Entity, fields: list[str]) -> dict[str, Any]:
         """
         Project only requested fields from entity.
 
@@ -144,9 +142,9 @@ class EntityQuery:
     def _apply_filters(
         self,
         entities: list[Entity],
-        type_id: Optional[str],
-        name_pattern: Optional[str],
-        path_pattern: Optional[str],
+        type_id: str | None,
+        name_pattern: str | None,
+        path_pattern: str | None,
         state: str,
     ) -> list[Entity]:
         """Apply filters to entity list."""

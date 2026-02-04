@@ -36,34 +36,65 @@ Configuration:
     Requires PARALLEL_APIKEY in .env or environment.
 """
 
+import sys
 from contextlib import asynccontextmanager
-from typing import Any, Optional
+from pathlib import Path
+from typing import Any
 
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
-import sys
-from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from cli.settings import settings
 from parallel_api.clients.async_client import ParallelClient
-from parallel_api.models import (
-    SearchRequest,
-    SearchResponse,
-    ExtractRequest,
-    ExtractResponse,
-    CreateMonitorRequest,
-    Monitor,
-    TaskRunRequest,
-    TaskRun,
-    FindAllRequest,
-    FindAllRun,
-)
+
+# === Error Models ===
+
+
+class ErrorInfo(BaseModel):
+    """Structured error response per Anthropic error handling patterns."""
+
+    type: str  # "invalid_request_error", "authentication_error", etc.
+    message: str  # Human-readable error message
+    param: str | None = None  # Parameter that caused the error
+    code: str | None = None  # Machine-readable error code
+
+
+class APIException(HTTPException):
+    """Extended HTTPException with structured error fields."""
+
+    def __init__(
+        self,
+        status_code: int,
+        detail: str,
+        param: str | None = None,
+        code: str | None = None,
+    ):
+        super().__init__(status_code=status_code, detail=detail)
+        self.param = param
+        self.code = code
+
+
+def _status_to_error_type(status_code: int) -> str:
+    """Map HTTP status codes to Anthropic-style error types."""
+    return {
+        400: "invalid_request_error",
+        401: "authentication_error",
+        403: "permission_error",
+        404: "not_found_error",
+        422: "invalid_request_error",
+        429: "rate_limit_error",
+        500: "api_error",
+        502: "api_error",
+        503: "overloaded_error",
+    }.get(status_code, "api_error")
 
 
 # === Lifespan ===
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -94,44 +125,88 @@ app.add_middleware(
 )
 
 
+# === Exception Handlers ===
+
+
+@app.exception_handler(HTTPException)
+async def structured_exception_handler(
+    request: Request, exc: HTTPException
+) -> JSONResponse:
+    """Convert HTTPException to structured error response."""
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "error": {
+                "type": _status_to_error_type(exc.status_code),
+                "message": exc.detail,
+                "param": getattr(exc, "param", None),
+                "code": getattr(exc, "code", None),
+            }
+        },
+    )
+
+
+@app.exception_handler(Exception)
+async def generic_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    """Convert unhandled exceptions to structured error response."""
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error": {
+                "type": "api_error",
+                "message": str(exc),
+                "param": None,
+                "code": "internal_error",
+            }
+        },
+    )
+
+
 # === Dependencies ===
+
 
 async def get_parallel_client() -> ParallelClient:
     """Dependency to get configured Parallel client."""
     if not settings.parallel_apikey:
-        raise HTTPException(
+        raise APIException(
             status_code=500,
-            detail="PARALLEL_APIKEY not configured",
+            detail="PARALLEL_APIKEY not configured. Set environment variable or add to .env file.",
+            code="missing_api_key",
         )
     return ParallelClient(api_key=settings.parallel_apikey)
 
 
 # === Request/Response Models ===
 
+
 class SearchRequestBody(BaseModel):
     """Simplified search request."""
-    objective: Optional[str] = None
-    search_queries: Optional[list[str]] = None
+
+    objective: str | None = None
+    search_queries: list[str] | None = None
     max_results: int = Field(default=10, ge=1, le=100)
     mode: str = Field(default="one-shot")
 
 
 class ExtractRequestBody(BaseModel):
     """Simplified extract request."""
+
     urls: list[str] = Field(..., min_length=1)
-    objective: Optional[str] = None
+    objective: str | None = None
     full_content: bool = False
 
 
 class MonitorCreateBody(BaseModel):
     """Monitor creation request."""
+
     query: str
     cadence: str = Field(default="daily")
-    webhook_url: Optional[str] = None
+    webhook_url: str | None = None
 
 
 class TaskRunBody(BaseModel):
     """Task run request."""
+
     processor: str
     input: str
     wait_for_completion: bool = True
@@ -139,6 +214,7 @@ class TaskRunBody(BaseModel):
 
 class FindAllBody(BaseModel):
     """FindAll request."""
+
     objective: str
     entity_type: str
     match_limit: int = Field(default=50, ge=5, le=1000)
@@ -147,12 +223,14 @@ class FindAllBody(BaseModel):
 
 class HealthResponse(BaseModel):
     """Health check response."""
+
     status: str
     parallel_api_configured: bool
     version: str
 
 
 # === Health Check ===
+
 
 @app.get("/health", response_model=HealthResponse)
 async def health_check() -> HealthResponse:
@@ -165,6 +243,7 @@ async def health_check() -> HealthResponse:
 
 
 # === Search Endpoints ===
+
 
 @app.post("/api/search")
 async def search(
@@ -191,10 +270,15 @@ async def search(
             "result_count": len(response.results),
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise APIException(
+            status_code=500,
+            detail=f"Search operation failed: {e}",
+            code="search_failed",
+        )
 
 
 # === Extract Endpoints ===
+
 
 @app.post("/api/extract")
 async def extract(
@@ -220,10 +304,15 @@ async def extract(
             "errors": [e.model_dump() for e in response.errors],
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise APIException(
+            status_code=500,
+            detail=f"Content extraction failed: {e}",
+            code="extract_failed",
+        )
 
 
 # === Monitor Endpoints ===
+
 
 @app.get("/api/monitors")
 async def list_monitors(
@@ -239,7 +328,11 @@ async def list_monitors(
             "count": len(monitors),
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise APIException(
+            status_code=500,
+            detail=f"Failed to list monitors: {e}",
+            code="list_monitors_failed",
+        )
 
 
 @app.post("/api/monitors")
@@ -258,7 +351,11 @@ async def create_monitor(
 
         return monitor.model_dump()
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise APIException(
+            status_code=500,
+            detail=f"Failed to create monitor: {e}",
+            code="create_monitor_failed",
+        )
 
 
 @app.get("/api/monitors/{monitor_id}")
@@ -273,7 +370,12 @@ async def get_monitor(
 
         return monitor.model_dump()
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise APIException(
+            status_code=404,
+            detail=f"Monitor not found or retrieval failed: {e}",
+            param="monitor_id",
+            code="monitor_not_found",
+        )
 
 
 @app.delete("/api/monitors/{monitor_id}")
@@ -288,10 +390,16 @@ async def delete_monitor(
 
         return {"deleted": True, "monitor_id": monitor_id}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise APIException(
+            status_code=500,
+            detail=f"Failed to delete monitor: {e}",
+            param="monitor_id",
+            code="delete_monitor_failed",
+        )
 
 
 # === Task Endpoints ===
+
 
 @app.post("/api/tasks")
 async def create_task(
@@ -322,7 +430,11 @@ async def create_task(
             "is_active": run.is_active,
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise APIException(
+            status_code=500,
+            detail=f"Failed to create task: {e}",
+            code="create_task_failed",
+        )
 
 
 @app.get("/api/tasks/{run_id}")
@@ -343,10 +455,16 @@ async def get_task(
 
         return response
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise APIException(
+            status_code=404,
+            detail=f"Task not found or retrieval failed: {e}",
+            param="run_id",
+            code="task_not_found",
+        )
 
 
 # === FindAll Endpoints ===
+
 
 @app.post("/api/findall")
 async def create_findall(
@@ -370,7 +488,11 @@ async def create_findall(
             "is_active": run.status.is_active,
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise APIException(
+            status_code=500,
+            detail=f"Failed to create FindAll run: {e}",
+            code="create_findall_failed",
+        )
 
 
 @app.get("/api/findall/{findall_id}")
@@ -389,7 +511,12 @@ async def get_findall(
             "is_active": run.status.is_active,
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise APIException(
+            status_code=404,
+            detail=f"FindAll run not found or retrieval failed: {e}",
+            param="findall_id",
+            code="findall_not_found",
+        )
 
 
 @app.get("/api/findall/{findall_id}/result")
@@ -404,14 +531,21 @@ async def get_findall_result(
 
         return result.model_dump()
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise APIException(
+            status_code=404,
+            detail=f"FindAll result not found or retrieval failed: {e}",
+            param="findall_id",
+            code="findall_result_not_found",
+        )
 
 
 # === Main Entry Point ===
 
-def main():
+
+def main() -> None:
     """Run the FastAPI server."""
     import uvicorn
+
     uvicorn.run(
         "parallel_api.fastapi_app:app",
         host="0.0.0.0",

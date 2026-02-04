@@ -23,11 +23,11 @@ Test coverage:
 - Cache operations
 """
 
-import pytest
-from datetime import datetime
 from uuid import UUID
 
-from entity_store.models import Entity, EntityType, EntityState
+import pytest
+
+from entity_store.models import Entity, EntityState, EntityType
 
 
 class TestEntityModel:

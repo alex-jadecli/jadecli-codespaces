@@ -22,7 +22,7 @@ Provides multi-tier caching for token reduction:
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 from uuid import UUID
 
 from entity_store.models import Entity
@@ -53,7 +53,7 @@ class EntityCache:
     - Entity signatures (L3, persistent)
     """
 
-    def __init__(self, cache_dir: Optional[Path] = None) -> None:
+    def __init__(self, cache_dir: Path | None = None) -> None:
         """
         Initialize cache.
 
@@ -64,7 +64,7 @@ class EntityCache:
         self.cache_dir = cache_dir or Path(".entity-cache")
         self._memory_cache: dict[str, CacheEntry] = {}
 
-    def get(self, key: str) -> Optional[Any]:
+    def get(self, key: str) -> Any | None:
         """
         Get a cached value.
 
@@ -117,7 +117,7 @@ class EntityCache:
         """Clear all cache entries."""
         raise NotImplementedError("clear not yet implemented")
 
-    def get_entity(self, entity_id: UUID) -> Optional[Entity]:
+    def get_entity(self, entity_id: UUID) -> Entity | None:
         """
         Get a cached entity by ID.
 
@@ -139,7 +139,7 @@ class EntityCache:
         """
         raise NotImplementedError("set_entity not yet implemented")
 
-    def get_parse_result(self, filepath: Path) -> Optional[list[Entity]]:
+    def get_parse_result(self, filepath: Path) -> list[Entity] | None:
         """
         Get cached parse results for a file.
 

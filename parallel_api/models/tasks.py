@@ -23,7 +23,8 @@ Task execution with processors, MCP servers, and webhooks.
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Optional, Union
+from typing import Any
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -44,11 +45,11 @@ class SourcePolicy(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    include_domains: Optional[list[str]] = Field(
+    include_domains: list[str] | None = Field(
         default=None,
         description="Only include results from these domains",
     )
-    exclude_domains: Optional[list[str]] = Field(
+    exclude_domains: list[str] | None = Field(
         default=None,
         description="Exclude results from these domains",
     )
@@ -60,11 +61,11 @@ class MCPServerConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     url: str = Field(..., description="MCP server URL")
-    name: Optional[str] = Field(
+    name: str | None = Field(
         default=None,
         description="Server display name",
     )
-    headers: Optional[dict[str, str]] = Field(
+    headers: dict[str, str] | None = Field(
         default=None,
         description="Custom headers for server requests",
     )
@@ -75,12 +76,12 @@ class TaskSpec(BaseModel):
 
     model_config = ConfigDict(extra="allow")
 
-    schema_: Optional[dict] = Field(
+    schema_: dict | None = Field(
         default=None,
         alias="schema",
         description="JSON schema for task output",
     )
-    instructions: Optional[str] = Field(
+    instructions: str | None = Field(
         default=None,
         description="Additional task instructions",
     )
@@ -92,7 +93,7 @@ class WebhookConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     url: str = Field(..., description="Webhook callback URL")
-    headers: Optional[dict[str, str]] = Field(
+    headers: dict[str, str] | None = Field(
         default=None,
         description="Custom headers",
     )
@@ -107,31 +108,31 @@ class TaskRunRequest(BaseModel):
         ...,
         description="Processor selection for task execution",
     )
-    input: Union[str, dict[str, Any]] = Field(
+    input: str | dict[str, Any] = Field(
         ...,
         description="Task input—either text or JSON structure",
     )
-    metadata: Optional[dict[str, str]] = Field(
+    metadata: dict[str, str] | None = Field(
         default=None,
         description="User-provided key-value pairs (max 16 char keys, 512 char values)",
     )
-    source_policy: Optional[SourcePolicy] = Field(
+    source_policy: SourcePolicy | None = Field(
         default=None,
         description="Domain preferences for web search results",
     )
-    task_spec: Optional[TaskSpec] = Field(
+    task_spec: TaskSpec | None = Field(
         default=None,
         description="Structured task specification",
     )
-    mcp_servers: Optional[list[MCPServerConfig]] = Field(
+    mcp_servers: list[MCPServerConfig] | None = Field(
         default=None,
         description="Model Context Protocol servers for enhanced capabilities",
     )
-    enable_events: Optional[bool] = Field(
+    enable_events: bool | None = Field(
         default=None,
         description="Progress tracking toggle",
     )
-    webhook: Optional[WebhookConfig] = Field(
+    webhook: WebhookConfig | None = Field(
         default=None,
         description="Callback URL for run completion notifications",
     )
@@ -144,7 +145,7 @@ class TaskRunError(BaseModel):
 
     code: str = Field(..., description="Error code")
     message: str = Field(..., description="Error message")
-    details: Optional[dict] = Field(
+    details: dict | None = Field(
         default=None,
         description="Additional error details",
     )
@@ -161,19 +162,19 @@ class TaskRun(BaseModel):
     processor: str = Field(..., description="Processor used for execution")
     created_at: datetime = Field(..., description="Creation timestamp (RFC 3339)")
     modified_at: datetime = Field(..., description="Last modification timestamp")
-    metadata: Optional[dict[str, str]] = Field(
+    metadata: dict[str, str] | None = Field(
         default=None,
         description="Echoed user metadata",
     )
-    taskgroup_id: Optional[str] = Field(
+    taskgroup_id: str | None = Field(
         default=None,
         description="Associated batch group identifier",
     )
-    warnings: Optional[list[dict]] = Field(
+    warnings: list[dict] | None = Field(
         default=None,
         description="Non-fatal alerts",
     )
-    error: Optional[TaskRunError] = Field(
+    error: TaskRunError | None = Field(
         default=None,
         description="Failure details when status is 'failed'",
     )
@@ -184,7 +185,7 @@ class TaskGroupRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    name: Optional[str] = Field(
+    name: str | None = Field(
         default=None,
         description="Group display name",
     )
@@ -192,7 +193,7 @@ class TaskGroupRequest(BaseModel):
         ...,
         description="Processor for all runs in group",
     )
-    metadata: Optional[dict[str, str]] = Field(
+    metadata: dict[str, str] | None = Field(
         default=None,
         description="Group metadata",
     )
@@ -204,7 +205,7 @@ class TaskGroup(BaseModel):
     model_config = ConfigDict(extra="allow")
 
     taskgroup_id: str = Field(..., description="Unique group identifier")
-    name: Optional[str] = Field(default=None, description="Group name")
+    name: str | None = Field(default=None, description="Group name")
     processor: str = Field(..., description="Processor for group")
     status: str = Field(..., description="Group status")
     created_at: datetime = Field(..., description="Creation timestamp")
@@ -219,5 +220,5 @@ class TaskGroupRun(BaseModel):
     run_id: str = Field(..., description="Run identifier")
     taskgroup_id: str = Field(..., description="Parent group identifier")
     status: TaskRunStatus = Field(..., description="Run status")
-    input: Union[str, dict[str, Any]] = Field(..., description="Run input")
+    input: str | dict[str, Any] = Field(..., description="Run input")
     created_at: datetime = Field(..., description="Creation timestamp")

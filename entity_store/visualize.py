@@ -31,18 +31,18 @@ These visualizations help:
 - CodeRabbit analyze PRs
 """
 
-from dataclasses import dataclass, field
-from typing import Optional
 from collections import defaultdict
+from dataclasses import dataclass, field
 
-from entity_store.frontmatter import EntityFrontmatter, Actor
-
+from entity_store.frontmatter import Actor, EntityFrontmatter
 
 # === Architecture Tree ===
+
 
 @dataclass
 class TreeNode:
     """Node in the architecture tree."""
+
     name: str
     entity_type: str
     children: list["TreeNode"] = field(default_factory=list)
@@ -132,7 +132,11 @@ def generate_ascii_tree(
                     is_last_ent = j == len(file_entities) - 1
                     child_indent = "│   " * (i + 1)
                     child_prefix = "└── " if is_last_ent else "├── "
-                    ent_type = ent.entity_type_id.value if hasattr(ent.entity_type_id, 'value') else ent.entity_type_id
+                    ent_type = (
+                        ent.entity_type_id.value
+                        if hasattr(ent.entity_type_id, "value")
+                        else ent.entity_type_id
+                    )
                     lines.append(f"{child_indent}{child_prefix}[{ent_type}] {ent.entity_name}")
             else:
                 # This is a directory
@@ -145,9 +149,11 @@ def generate_ascii_tree(
 
 # === Sequence Diagram ===
 
+
 @dataclass
 class SequenceMessage:
     """A message in a sequence diagram."""
+
     from_actor: str
     to_actor: str
     message: str
@@ -156,7 +162,7 @@ class SequenceMessage:
 
 def generate_sequence_diagram(
     entities: list[EntityFrontmatter],
-    actors: Optional[list[Actor]] = None,
+    actors: list[Actor] | None = None,
     title: str = "Entity Interactions",
 ) -> str:
     """
@@ -202,11 +208,13 @@ def generate_sequence_diagram(
 
         # Add calls to callees
         for callee_id in entity.entity_callees:
-            messages.append(SequenceMessage(
-                from_actor=entity.entity_name,
-                to_actor=callee_id,
-                message="call",
-            ))
+            messages.append(
+                SequenceMessage(
+                    from_actor=entity.entity_name,
+                    to_actor=callee_id,
+                    message="call",
+                )
+            )
 
     # Generate diagram
     lines = []
@@ -247,9 +255,11 @@ def generate_sequence_diagram(
 
 # === Dependency Graph ===
 
+
 @dataclass
 class DependencyNode:
     """Node in dependency graph."""
+
     entity_id: str
     entity_name: str
     upstream: list[str] = field(default_factory=list)  # Dependencies
@@ -258,7 +268,7 @@ class DependencyNode:
 
 def generate_dependency_graph(
     entities: list[EntityFrontmatter],
-    target_entity_id: Optional[str] = None,
+    target_entity_id: str | None = None,
     max_depth: int = 3,
 ) -> str:
     """
@@ -370,6 +380,7 @@ def generate_dependency_graph(
 
 # === Breaking Change Analysis ===
 
+
 def analyze_breaking_changes(
     entities: list[EntityFrontmatter],
     changed_entity_ids: list[str],
@@ -417,11 +428,13 @@ def analyze_breaking_changes(
                     dep = entity_map[dep_id]
                     to_check.extend(dep.entity_callers)
 
-            impacted.append((
-                entity_id,
-                entity.entity_semver_impact.value,
-                dependents[:10],
-            ))
+            impacted.append(
+                (
+                    entity_id,
+                    entity.entity_semver_impact.value,
+                    dependents[:10],
+                )
+            )
 
     if impacted:
         lines.append("⚠️  BREAKING CHANGES DETECTED:")

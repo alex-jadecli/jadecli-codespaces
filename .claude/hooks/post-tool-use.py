@@ -30,8 +30,8 @@ try:
     sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
     from entity_store.cache import EntityCache
-    from entity_store.registry import EntityRegistry
     from entity_store.neon_client import NeonClient
+    from entity_store.registry import EntityRegistry
 except ImportError:
     # Dependencies not installed yet - skip hook
     sys.exit(0)

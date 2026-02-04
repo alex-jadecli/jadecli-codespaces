@@ -27,8 +27,7 @@ Validates that:
 import sys
 from pathlib import Path
 
-from entity_store.frontmatter import parse_frontmatter, EntityFrontmatter
-
+from entity_store.frontmatter import parse_frontmatter
 
 # Directories that require frontmatter
 TRACKED_DIRS = {"entity_store", "entity_cli", "cli", ".claude", "tests"}

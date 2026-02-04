@@ -38,20 +38,18 @@ Configuration:
     Uses cli/settings.py for centralized configuration.
 """
 
-import asyncio
-from typing import Any, Optional
+# Import settings for API key
+import sys
+from pathlib import Path
+from typing import Any
 
 from fastmcp import FastMCP
 from pydantic import Field
 
-# Import settings for API key
-import sys
-from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from cli.settings import settings
 from parallel_api.clients.async_client import ParallelClient
-
 
 # Create FastMCP application
 mcp_app = FastMCP(
@@ -63,14 +61,12 @@ mcp_app = FastMCP(
 def get_client() -> ParallelClient:
     """Get configured Parallel.ai client."""
     if not settings.parallel_apikey:
-        raise ValueError(
-            "PARALLEL_APIKEY not configured. "
-            "Set it in .env or environment variables."
-        )
+        raise ValueError("PARALLEL_APIKEY not configured. Set it in .env or environment variables.")
     return ParallelClient(api_key=settings.parallel_apikey)
 
 
 # === Search Tool ===
+
 
 @mcp_app.tool()
 async def parallel_search(
@@ -118,6 +114,7 @@ async def parallel_search(
 
 # === Extract Tool ===
 
+
 @mcp_app.tool()
 async def parallel_extract(
     urls: list[str] = Field(
@@ -125,7 +122,7 @@ async def parallel_extract(
         description="URLs to extract content from",
         min_length=1,
     ),
-    objective: Optional[str] = Field(
+    objective: str | None = Field(
         default=None,
         description="Focus extraction on this objective",
     ),
@@ -159,14 +156,12 @@ async def parallel_extract(
             }
             for r in response.results
         ],
-        "errors": [
-            {"url": e.url, "error": e.error_type}
-            for e in response.errors
-        ],
+        "errors": [{"url": e.url, "error": e.error_type} for e in response.errors],
     }
 
 
 # === Monitor Tools ===
+
 
 @mcp_app.tool()
 async def parallel_monitor_create(
@@ -246,6 +241,7 @@ async def parallel_monitor_delete(
 
 
 # === Task Tools ===
+
 
 @mcp_app.tool()
 async def parallel_task_run(
@@ -327,6 +323,7 @@ async def parallel_task_status(
 
 # === FindAll Tools ===
 
+
 @mcp_app.tool()
 async def parallel_findall(
     objective: str = Field(
@@ -402,6 +399,7 @@ async def parallel_findall_result(
 
 # === Resources ===
 
+
 @mcp_app.resource("parallel://config")
 async def get_parallel_config() -> str:
     """Get current Parallel.ai configuration status."""
@@ -426,9 +424,11 @@ Available Tools:
 
 # === Main Entry Point ===
 
-def main():
+
+def main() -> None:
     """Run the MCP server."""
     import uvicorn
+
     uvicorn.run(
         "parallel_api.mcp_server:mcp_app",
         host="0.0.0.0",

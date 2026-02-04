@@ -22,9 +22,8 @@ Uses Python's built-in ast module to extract:
 
 import ast
 from pathlib import Path
-from typing import Optional
 
-from entity_store.models import Entity, EntityType
+from entity_store.models import Entity
 
 
 class PythonEntityExtractor(ast.NodeVisitor):
@@ -69,11 +68,11 @@ class PythonEntityExtractor(ast.NodeVisitor):
         """Extract entity from async function/method definition."""
         raise NotImplementedError("visit_AsyncFunctionDef not yet implemented")
 
-    def _get_signature(self, node: ast.FunctionDef) -> str:
+    def _get_signature(self, node: ast.FunctionDef | ast.AsyncFunctionDef) -> str:
         """Extract function signature string."""
         raise NotImplementedError("_get_signature not yet implemented")
 
-    def _get_parent_id(self) -> Optional[str]:
+    def _get_parent_id(self) -> str | None:
         """Get parent entity ID from stack."""
         if self.parent_stack:
             return self.parent_stack[-1].entity_id

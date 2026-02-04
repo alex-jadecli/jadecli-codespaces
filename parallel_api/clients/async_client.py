@@ -35,32 +35,29 @@ Usage:
 """
 
 import asyncio
-from contextlib import asynccontextmanager
-from typing import Any, AsyncIterator, Optional, Union
+from typing import Any
 
 import httpx
 
 from parallel_api.models.extract import ExtractRequest, ExtractResponse
-from parallel_api.models.search import SearchRequest, SearchResponse
-from parallel_api.models.monitor import (
-    Monitor,
-    CreateMonitorRequest,
-    UpdateMonitorRequest,
-    MonitorEvent,
-    EventGroup,
+from parallel_api.models.findall import (
+    EnrichmentRequest,
+    FindAllRequest,
+    FindAllResult,
+    FindAllRun,
 )
+from parallel_api.models.monitor import (
+    CreateMonitorRequest,
+    Monitor,
+    MonitorEvent,
+    UpdateMonitorRequest,
+)
+from parallel_api.models.search import SearchRequest, SearchResponse
 from parallel_api.models.tasks import (
-    TaskRunRequest,
-    TaskRun,
     TaskGroup,
     TaskGroupRequest,
-    TaskGroupRun,
-)
-from parallel_api.models.findall import (
-    FindAllRequest,
-    FindAllRun,
-    FindAllResult,
-    EnrichmentRequest,
+    TaskRun,
+    TaskRunRequest,
 )
 
 
@@ -78,7 +75,7 @@ class ParallelClient:
     def __init__(
         self,
         api_key: str,
-        base_url: Optional[str] = None,
+        base_url: str | None = None,
         timeout: float = 30.0,
     ) -> None:
         """
@@ -92,7 +89,7 @@ class ParallelClient:
         self.api_key = api_key
         self.base_url = base_url or self.BASE_URL
         self.timeout = timeout
-        self._client: Optional[httpx.AsyncClient] = None
+        self._client: httpx.AsyncClient | None = None
 
     async def __aenter__(self) -> "ParallelClient":
         """Enter async context manager."""
@@ -131,8 +128,8 @@ class ParallelClient:
     async def extract(
         self,
         urls: list[str],
-        objective: Optional[str] = None,
-        search_queries: Optional[list[str]] = None,
+        objective: str | None = None,
+        search_queries: list[str] | None = None,
         excerpts: bool = True,
         full_content: bool = False,
     ) -> ExtractResponse:
@@ -169,8 +166,8 @@ class ParallelClient:
 
     async def search(
         self,
-        objective: Optional[str] = None,
-        search_queries: Optional[list[str]] = None,
+        objective: str | None = None,
+        search_queries: list[str] | None = None,
         max_results: int = 10,
         mode: str = "one-shot",
     ) -> SearchResponse:
@@ -214,8 +211,8 @@ class ParallelClient:
         self,
         query: str,
         cadence: str,
-        metadata: Optional[dict[str, str]] = None,
-        webhook_url: Optional[str] = None,
+        metadata: dict[str, str] | None = None,
+        webhook_url: str | None = None,
     ) -> Monitor:
         """
         Create a new monitor.
@@ -252,9 +249,9 @@ class ParallelClient:
     async def update_monitor(
         self,
         monitor_id: str,
-        query: Optional[str] = None,
-        cadence: Optional[str] = None,
-        status: Optional[str] = None,
+        query: str | None = None,
+        cadence: str | None = None,
+        status: str | None = None,
     ) -> Monitor:
         """Update a monitor."""
         request = UpdateMonitorRequest(
@@ -287,8 +284,8 @@ class ParallelClient:
     async def create_task_run(
         self,
         processor: str,
-        input: Union[str, dict[str, Any]],
-        metadata: Optional[dict[str, str]] = None,
+        input: str | dict[str, Any],
+        metadata: dict[str, str] | None = None,
         enable_events: bool = True,
     ) -> TaskRun:
         """
@@ -350,6 +347,7 @@ class ParallelClient:
             TimeoutError: If task doesn't complete in time
         """
         import time
+
         start = time.time()
 
         while True:
@@ -367,7 +365,7 @@ class ParallelClient:
     async def create_task_group(
         self,
         processor: str,
-        name: Optional[str] = None,
+        name: str | None = None,
     ) -> TaskGroup:
         """Create a task group for batch processing."""
         request = TaskGroupRequest(

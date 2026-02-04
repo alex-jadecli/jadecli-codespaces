@@ -29,15 +29,15 @@ This package provides:
 - Breaking change detection
 """
 
+from entity_store.cache import EntityCache
+from entity_store.frontmatter import EntityFrontmatter, generate_frontmatter, parse_frontmatter
 from entity_store.models import Entity, EntityType
 from entity_store.registry import EntityRegistry
-from entity_store.cache import EntityCache
-from entity_store.frontmatter import EntityFrontmatter, parse_frontmatter, generate_frontmatter
 from entity_store.visualize import (
-    generate_ascii_tree,
-    generate_sequence_diagram,
-    generate_dependency_graph,
     analyze_breaking_changes,
+    generate_ascii_tree,
+    generate_dependency_graph,
+    generate_sequence_diagram,
 )
 
 __all__ = [

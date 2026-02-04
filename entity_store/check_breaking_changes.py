@@ -33,8 +33,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from entity_store.frontmatter import parse_frontmatter, BreakingChangeRisk
-from entity_store.visualize import analyze_breaking_changes
+from entity_store.frontmatter import BreakingChangeRisk, parse_frontmatter
 
 
 def get_changed_files() -> list[Path]:
@@ -98,22 +97,26 @@ def check_breaking_changes() -> tuple[bool, list[str]]:
 
         # Check for breaking change risk
         if frontmatter.entity_breaking_change_risk == BreakingChangeRisk.HIGH:
-            breaking_changes.append({
-                "file": str(filepath),
-                "entity": frontmatter.entity_name,
-                "risk": "HIGH",
-                "callers": frontmatter.entity_callers,
-                "semver": frontmatter.entity_semver_impact.value,
-            })
+            breaking_changes.append(
+                {
+                    "file": str(filepath),
+                    "entity": frontmatter.entity_name,
+                    "risk": "HIGH",
+                    "callers": frontmatter.entity_callers,
+                    "semver": frontmatter.entity_semver_impact.value,
+                }
+            )
 
         if frontmatter.entity_public_api and frontmatter.would_break_dependents():
-            breaking_changes.append({
-                "file": str(filepath),
-                "entity": frontmatter.entity_name,
-                "risk": "PUBLIC API",
-                "callers": frontmatter.entity_callers,
-                "semver": "major",
-            })
+            breaking_changes.append(
+                {
+                    "file": str(filepath),
+                    "entity": frontmatter.entity_name,
+                    "risk": "PUBLIC API",
+                    "callers": frontmatter.entity_callers,
+                    "semver": "major",
+                }
+            )
 
     if breaking_changes:
         messages.append("⚠️  BREAKING CHANGES DETECTED")
@@ -126,7 +129,7 @@ def check_breaking_changes() -> tuple[bool, list[str]]:
             messages.append(f"     Entity: {change['entity']}")
             messages.append(f"     Risk: {change['risk']}")
             messages.append(f"     Semver Impact: {change['semver'].upper()}")
-            if change['callers']:
+            if change["callers"]:
                 messages.append(f"     Dependents: {', '.join(change['callers'][:5])}")
             messages.append("")
 

@@ -21,7 +21,6 @@ Provides async database operations for:
 """
 
 from datetime import datetime
-from typing import Optional
 from uuid import UUID
 
 from entity_store.models import Entity
@@ -38,7 +37,7 @@ class NeonClient:
     - Change log for cache invalidation
     """
 
-    def __init__(self, connection_string: Optional[str] = None) -> None:
+    def __init__(self, connection_string: str | None = None) -> None:
         """
         Initialize Neon client.
 
@@ -69,7 +68,7 @@ class NeonClient:
         """
         raise NotImplementedError("upsert_entity not yet implemented")
 
-    async def get_entity(self, entity_id: UUID) -> Optional[Entity]:
+    async def get_entity(self, entity_id: UUID) -> Entity | None:
         """
         Get an entity by ID.
 
@@ -81,9 +80,7 @@ class NeonClient:
         """
         raise NotImplementedError("get_entity not yet implemented")
 
-    async def search_entities(
-        self, query: str, limit: int = 20
-    ) -> list[Entity]:
+    async def search_entities(self, query: str, limit: int = 20) -> list[Entity]:
         """
         Search entities using BM25 full-text search.
 
@@ -96,7 +93,7 @@ class NeonClient:
         """
         raise NotImplementedError("search_entities not yet implemented")
 
-    async def get_last_index_time(self, repo_path: str) -> Optional[datetime]:
+    async def get_last_index_time(self, repo_path: str) -> datetime | None:
         """
         Get the last indexing time for a repository.
 
@@ -122,8 +119,8 @@ class NeonClient:
         entity_id: UUID,
         entity_path: str,
         change_type: str,
-        old_signature: Optional[str] = None,
-        new_signature: Optional[str] = None,
+        old_signature: str | None = None,
+        new_signature: str | None = None,
     ) -> None:
         """
         Log an entity change for cache invalidation.

@@ -24,7 +24,7 @@ Web search with natural language objectives or keyword queries.
 
 from datetime import date
 from enum import Enum
-from typing import Optional
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -40,11 +40,11 @@ class ExcerptConfig(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    max_chars_per_result: Optional[int] = Field(
+    max_chars_per_result: int | None = Field(
         default=None,
         description="Maximum characters per result excerpt",
     )
-    max_chars_total: Optional[int] = Field(
+    max_chars_total: int | None = Field(
         default=None,
         description="Maximum total characters across all excerpts",
     )
@@ -55,15 +55,15 @@ class SourcePolicy(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    include_domains: Optional[list[str]] = Field(
+    include_domains: list[str] | None = Field(
         default=None,
         description="Only include results from these domains",
     )
-    exclude_domains: Optional[list[str]] = Field(
+    exclude_domains: list[str] | None = Field(
         default=None,
         description="Exclude results from these domains",
     )
-    after_date: Optional[date] = Field(
+    after_date: date | None = Field(
         default=None,
         description="Only include results published after this date",
     )
@@ -74,15 +74,15 @@ class FetchPolicy(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    max_age_seconds: Optional[int] = Field(
+    max_age_seconds: int | None = Field(
         default=None,
         description="Maximum age of cached content",
     )
-    timeout_seconds: Optional[int] = Field(
+    timeout_seconds: int | None = Field(
         default=None,
         description="Request timeout",
     )
-    disable_cache_fallback: Optional[bool] = Field(
+    disable_cache_fallback: bool | None = Field(
         default=None,
         description="Disable cache fallback",
     )
@@ -93,33 +93,33 @@ class SearchRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    objective: Optional[str] = Field(
+    objective: str | None = Field(
         default=None,
         description="Natural-language description of what the web search is trying to find",
     )
-    search_queries: Optional[list[str]] = Field(
+    search_queries: list[str] | None = Field(
         default=None,
         description="Optional list of traditional keyword search queries",
     )
-    mode: Optional[SearchMode] = Field(
+    mode: SearchMode | None = Field(
         default=SearchMode.ONE_SHOT,
         description="Search processing mode",
     )
-    max_results: Optional[int] = Field(
+    max_results: int | None = Field(
         default=10,
         ge=1,
         le=100,
         description="Maximum number of results to return",
     )
-    excerpts: Optional[ExcerptConfig] = Field(
+    excerpts: ExcerptConfig | None = Field(
         default=None,
         description="Excerpt configuration",
     )
-    source_policy: Optional[SourcePolicy] = Field(
+    source_policy: SourcePolicy | None = Field(
         default=None,
         description="Source filtering policy",
     )
-    fetch_policy: Optional[FetchPolicy] = Field(
+    fetch_policy: FetchPolicy | None = Field(
         default=None,
         description="Content fetching policy",
     )
@@ -131,12 +131,12 @@ class SearchResult(BaseModel):
     model_config = ConfigDict(extra="allow")
 
     url: str = Field(..., description="Result URL")
-    title: Optional[str] = Field(default=None, description="Page title")
-    publish_date: Optional[str] = Field(
+    title: str | None = Field(default=None, description="Page title")
+    publish_date: str | None = Field(
         default=None,
         description="Publication date",
     )
-    excerpts: Optional[list[str]] = Field(
+    excerpts: list[str] | None = Field(
         default=None,
         description="Relevant excerpts from the page",
     )
@@ -152,11 +152,11 @@ class SearchResponse(BaseModel):
         default_factory=list,
         description="Search results",
     )
-    warnings: Optional[list[dict]] = Field(
+    warnings: list[dict] | None = Field(
         default=None,
         description="Non-fatal warnings",
     )
-    usage: Optional[list[dict]] = Field(
+    usage: list[dict] | None = Field(
         default=None,
         description="API usage statistics",
     )

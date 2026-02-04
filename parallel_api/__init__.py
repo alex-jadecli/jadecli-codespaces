@@ -34,21 +34,21 @@ Usage:
 
 from parallel_api.clients.async_client import ParallelClient
 from parallel_api.models import (
+    CreateMonitorRequest,
     # Extract
     ExtractRequest,
     ExtractResponse,
-    # Search
-    SearchRequest,
-    SearchResponse,
-    # Monitor
-    Monitor,
-    CreateMonitorRequest,
-    # Tasks
-    TaskRunRequest,
-    TaskRun,
     # FindAll
     FindAllRequest,
     FindAllRun,
+    # Monitor
+    Monitor,
+    # Search
+    SearchRequest,
+    SearchResponse,
+    TaskRun,
+    # Tasks
+    TaskRunRequest,
 )
 
 __all__ = [

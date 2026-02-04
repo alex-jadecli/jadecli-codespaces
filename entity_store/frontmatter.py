@@ -64,18 +64,18 @@ Actors (for sequence diagrams):
   - entity_actors: [dev, claude, user, coderabbit]
 """
 
+import re
 from datetime import datetime
 from enum import Enum
-from typing import Literal, Optional
-from uuid import UUID, uuid4
-import re
-import yaml
+from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+import yaml
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class EntityTypeId(str, Enum):
     """Valid entity type identifiers."""
+
     MODULE = "module"
     CLASS = "class"
     METHOD = "method"
@@ -93,6 +93,7 @@ class EntityTypeId(str, Enum):
 
 class SemverImpact(str, Enum):
     """Semantic versioning impact levels."""
+
     MAJOR = "major"  # Breaking change
     MINOR = "minor"  # New feature, backwards compatible
     PATCH = "patch"  # Bug fix, no API change
@@ -100,16 +101,18 @@ class SemverImpact(str, Enum):
 
 class BreakingChangeRisk(str, Enum):
     """Risk level for breaking changes."""
-    HIGH = "high"      # Many dependents, public API
+
+    HIGH = "high"  # Many dependents, public API
     MEDIUM = "medium"  # Some dependents, internal API
-    LOW = "low"        # Few/no dependents, private
+    LOW = "low"  # Few/no dependents, private
 
 
 class Actor(str, Enum):
     """Actors for sequence diagrams."""
-    DEV = "dev"              # Developer
-    CLAUDE = "claude"        # Claude Code
-    USER = "user"            # End user
+
+    DEV = "dev"  # Developer
+    CLAUDE = "claude"  # Claude Code
+    USER = "user"  # End user
     CODERABBIT = "coderabbit"  # CodeRabbit CLI
 
 
@@ -149,12 +152,12 @@ class EntityFrontmatter(BaseModel):
         ...,
         description="Relative file path",
     )
-    entity_line_start: Optional[int] = Field(
+    entity_line_start: int | None = Field(
         default=None,
         ge=1,
         description="Start line number (1-indexed)",
     )
-    entity_line_end: Optional[int] = Field(
+    entity_line_end: int | None = Field(
         default=None,
         ge=1,
         description="End line number",
@@ -173,7 +176,7 @@ class EntityFrontmatter(BaseModel):
         ...,
         description="Creation timestamp (ISO-8601)",
     )
-    entity_last_updated: Optional[str] = Field(
+    entity_last_updated: str | None = Field(
         default=None,
         description="Last update timestamp (ISO-8601)",
     )
@@ -223,11 +226,11 @@ class EntityFrontmatter(BaseModel):
     )
 
     # === Documentation ===
-    entity_docstring: Optional[str] = Field(
+    entity_docstring: str | None = Field(
         default=None,
         description="Brief description or docstring",
     )
-    entity_signature: Optional[str] = Field(
+    entity_signature: str | None = Field(
         default=None,
         description="Function/method signature",
     )
@@ -266,23 +269,14 @@ class EntityFrontmatter(BaseModel):
 
 # === Parsing Functions ===
 
-PYTHON_FRONTMATTER_PATTERN = re.compile(
-    r'^# ---\s*\n((?:# .*\n)+)# ---\s*\n',
-    re.MULTILINE
-)
+PYTHON_FRONTMATTER_PATTERN = re.compile(r"^# ---\s*\n((?:# .*\n)+)# ---\s*\n", re.MULTILINE)
 
-YAML_FRONTMATTER_PATTERN = re.compile(
-    r'^---\s*\n(.*?)\n---\s*\n',
-    re.DOTALL
-)
+YAML_FRONTMATTER_PATTERN = re.compile(r"^---\s*\n(.*?)\n---\s*\n", re.DOTALL)
 
-TS_FRONTMATTER_PATTERN = re.compile(
-    r'^// ---\s*\n((?:// .*\n)+)// ---\s*\n',
-    re.MULTILINE
-)
+TS_FRONTMATTER_PATTERN = re.compile(r"^// ---\s*\n((?:// .*\n)+)// ---\s*\n", re.MULTILINE)
 
 
-def parse_frontmatter(source: str, language: str = "python") -> Optional[EntityFrontmatter]:
+def parse_frontmatter(source: str, language: str = "python") -> EntityFrontmatter | None:
     """
     Parse frontmatter from source code.
 
@@ -298,16 +292,14 @@ def parse_frontmatter(source: str, language: str = "python") -> Optional[EntityF
         if match:
             # Remove '# ' prefix from each line
             yaml_content = "\n".join(
-                line[2:] if line.startswith("# ") else line
-                for line in match.group(1).split("\n")
+                line[2:] if line.startswith("# ") else line for line in match.group(1).split("\n")
             )
     elif language in ("typescript", "javascript"):
         match = TS_FRONTMATTER_PATTERN.match(source)
         if match:
             # Remove '// ' prefix from each line
             yaml_content = "\n".join(
-                line[3:] if line.startswith("// ") else line
-                for line in match.group(1).split("\n")
+                line[3:] if line.startswith("// ") else line for line in match.group(1).split("\n")
             )
     elif language == "markdown":
         match = YAML_FRONTMATTER_PATTERN.match(source)

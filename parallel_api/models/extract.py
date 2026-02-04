@@ -22,8 +22,7 @@ POST /v1beta/extract
 Extract content from web URLs with optional focusing on objectives/queries.
 """
 
-from typing import Optional, Union
-from pydantic import BaseModel, ConfigDict, Field, HttpUrl
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class FetchPolicy(BaseModel):
@@ -31,15 +30,15 @@ class FetchPolicy(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    max_age_seconds: Optional[int] = Field(
+    max_age_seconds: int | None = Field(
         default=None,
         description="Maximum age of cached content in seconds",
     )
-    timeout_seconds: Optional[int] = Field(
+    timeout_seconds: int | None = Field(
         default=None,
         description="Request timeout in seconds",
     )
-    disable_cache_fallback: Optional[bool] = Field(
+    disable_cache_fallback: bool | None = Field(
         default=None,
         description="Disable fallback to cached content on failure",
     )
@@ -50,11 +49,11 @@ class ExcerptSettings(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    max_chars_per_result: Optional[int] = Field(
+    max_chars_per_result: int | None = Field(
         default=None,
         description="Maximum characters per excerpt",
     )
-    max_chars_total: Optional[int] = Field(
+    max_chars_total: int | None = Field(
         default=None,
         description="Maximum total characters across all excerpts",
     )
@@ -65,7 +64,7 @@ class FullContentSettings(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    max_chars: Optional[int] = Field(
+    max_chars: int | None = Field(
         default=None,
         description="Maximum characters to extract",
     )
@@ -81,23 +80,23 @@ class ExtractRequest(BaseModel):
         description="Web URLs to extract content from",
         min_length=1,
     )
-    objective: Optional[str] = Field(
+    objective: str | None = Field(
         default=None,
         description="Focuses extracted content on the specified search objective",
     )
-    search_queries: Optional[list[str]] = Field(
+    search_queries: list[str] | None = Field(
         default=None,
         description="Focuses extracted content on the specified keyword search queries",
     )
-    fetch_policy: Optional[FetchPolicy] = Field(
+    fetch_policy: FetchPolicy | None = Field(
         default=None,
         description="Determines cached vs. live content retrieval",
     )
-    excerpts: Union[bool, ExcerptSettings] = Field(
+    excerpts: bool | ExcerptSettings = Field(
         default=True,
         description="Include relevant excerpts from each URL",
     )
-    full_content: Union[bool, FullContentSettings] = Field(
+    full_content: bool | FullContentSettings = Field(
         default=False,
         description="Include complete content from each URL",
     )
@@ -109,12 +108,12 @@ class ExtractResult(BaseModel):
     model_config = ConfigDict(extra="allow")
 
     url: str = Field(..., description="The extracted URL")
-    title: Optional[str] = Field(default=None, description="Page title")
-    excerpts: Optional[list[str]] = Field(
+    title: str | None = Field(default=None, description="Page title")
+    excerpts: list[str] | None = Field(
         default=None,
         description="Relevant excerpts from the page",
     )
-    full_content: Optional[str] = Field(
+    full_content: str | None = Field(
         default=None,
         description="Complete page content",
     )
@@ -127,11 +126,11 @@ class ExtractError(BaseModel):
 
     url: str = Field(..., description="The failed URL")
     error_type: str = Field(..., description="Type of error")
-    http_status_code: Optional[int] = Field(
+    http_status_code: int | None = Field(
         default=None,
         description="HTTP status code if applicable",
     )
-    content: Optional[str] = Field(
+    content: str | None = Field(
         default=None,
         description="Error details",
     )
@@ -151,11 +150,11 @@ class ExtractResponse(BaseModel):
         default_factory=list,
         description="Failed extraction errors",
     )
-    warnings: Optional[list[dict]] = Field(
+    warnings: list[dict] | None = Field(
         default=None,
         description="Non-fatal warnings",
     )
-    usage: Optional[dict] = Field(
+    usage: dict | None = Field(
         default=None,
         description="API usage statistics",
     )

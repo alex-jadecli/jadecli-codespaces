@@ -23,7 +23,8 @@ Entity discovery with matching conditions and enrichment.
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -64,7 +65,7 @@ class WebhookConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     url: str = Field(..., description="Webhook callback URL")
-    event_types: Optional[list[str]] = Field(
+    event_types: list[str] | None = Field(
         default=None,
         description="Event types to send",
     )
@@ -99,15 +100,15 @@ class FindAllRequest(BaseModel):
         le=1000,
         description="Results cap (5-1000 inclusive)",
     )
-    exclude_list: Optional[list[str]] = Field(
+    exclude_list: list[str] | None = Field(
         default=None,
         description="Entities to skip",
     )
-    metadata: Optional[dict[str, str]] = Field(
+    metadata: dict[str, str] | None = Field(
         default=None,
         description="Custom tracking data",
     )
-    webhook: Optional[WebhookConfig] = Field(
+    webhook: WebhookConfig | None = Field(
         default=None,
         description="Event notifications",
     )
@@ -130,7 +131,7 @@ class FindAllStatus(BaseModel):
 
     status: FindAllRunStatus = Field(..., description="Run state")
     is_active: bool = Field(..., description="Execution state")
-    metrics: Optional[FindAllStatusMetrics] = Field(
+    metrics: FindAllStatusMetrics | None = Field(
         default=None,
         description="Progress tracking",
     )
@@ -144,7 +145,7 @@ class FindAllRun(BaseModel):
     findall_id: str = Field(..., description="Unique run identifier")
     status: FindAllStatus = Field(..., description="Current state information")
     generator: FindAllGenerator = Field(..., description="Selected processor tier")
-    metadata: Optional[dict[str, str]] = Field(
+    metadata: dict[str, str] | None = Field(
         default=None,
         description="User-provided context",
     )
@@ -166,7 +167,7 @@ class EnrichmentRequest(BaseModel):
         description="Fields to enrich",
         min_length=1,
     )
-    options: Optional[dict[str, Any]] = Field(
+    options: dict[str, Any] | None = Field(
         default=None,
         description="Enrichment options",
     )
@@ -189,7 +190,7 @@ class FindAllMatch(BaseModel):
         le=1.0,
         description="Match confidence score",
     )
-    source_url: Optional[str] = Field(
+    source_url: str | None = Field(
         default=None,
         description="Source URL for match",
     )
@@ -206,7 +207,7 @@ class FindAllResult(BaseModel):
         description="Found matches",
     )
     total_matches: int = Field(default=0, description="Total match count")
-    schema: Optional[dict] = Field(
+    schema: dict | None = Field(
         default=None,
         description="Result schema",
     )

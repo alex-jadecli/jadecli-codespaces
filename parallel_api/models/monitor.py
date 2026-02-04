@@ -23,8 +23,8 @@ Continuous web monitoring with scheduled queries and webhook notifications.
 
 from datetime import datetime
 from enum import Enum
-from typing import Optional
-from pydantic import BaseModel, ConfigDict, Field, HttpUrl
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class MonitorStatus(str, Enum):
@@ -56,11 +56,11 @@ class WebhookConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     url: str = Field(..., description="Webhook callback URL")
-    event_types: Optional[list[WebhookEventType]] = Field(
+    event_types: list[WebhookEventType] | None = Field(
         default=None,
         description="Event types to send to webhook",
     )
-    headers: Optional[dict[str, str]] = Field(
+    headers: dict[str, str] | None = Field(
         default=None,
         description="Custom headers for webhook requests",
     )
@@ -80,11 +80,11 @@ class CreateMonitorRequest(BaseModel):
         ...,
         description="Execution cadence",
     )
-    metadata: Optional[dict[str, str]] = Field(
+    metadata: dict[str, str] | None = Field(
         default=None,
         description="User-provided custom metadata",
     )
-    webhook: Optional[WebhookConfig] = Field(
+    webhook: WebhookConfig | None = Field(
         default=None,
         description="Webhook configuration for notifications",
     )
@@ -95,23 +95,23 @@ class UpdateMonitorRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    query: Optional[str] = Field(
+    query: str | None = Field(
         default=None,
         description="Updated query",
     )
-    cadence: Optional[MonitorCadence] = Field(
+    cadence: MonitorCadence | None = Field(
         default=None,
         description="Updated cadence",
     )
-    status: Optional[MonitorStatus] = Field(
+    status: MonitorStatus | None = Field(
         default=None,
         description="Updated status",
     )
-    metadata: Optional[dict[str, str]] = Field(
+    metadata: dict[str, str] | None = Field(
         default=None,
         description="Updated metadata",
     )
-    webhook: Optional[WebhookConfig] = Field(
+    webhook: WebhookConfig | None = Field(
         default=None,
         description="Updated webhook config",
     )
@@ -126,16 +126,16 @@ class Monitor(BaseModel):
     query: str = Field(..., description="The monitored query")
     status: MonitorStatus = Field(..., description="Current status")
     cadence: MonitorCadence = Field(..., description="Execution cadence")
-    metadata: Optional[dict[str, str]] = Field(
+    metadata: dict[str, str] | None = Field(
         default=None,
         description="User-provided metadata",
     )
-    webhook: Optional[WebhookConfig] = Field(
+    webhook: WebhookConfig | None = Field(
         default=None,
         description="Webhook configuration",
     )
     created_at: datetime = Field(..., description="Creation timestamp")
-    last_run_at: Optional[datetime] = Field(
+    last_run_at: datetime | None = Field(
         default=None,
         description="Most recent execution timestamp",
     )
@@ -149,7 +149,7 @@ class MonitorEvent(BaseModel):
     event_id: str = Field(..., description="Unique event ID")
     event_type: str = Field(..., description="Type of event")
     created_at: datetime = Field(..., description="Event timestamp")
-    data: Optional[dict] = Field(
+    data: dict | None = Field(
         default=None,
         description="Event data",
     )

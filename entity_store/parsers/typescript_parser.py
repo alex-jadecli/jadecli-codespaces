@@ -22,9 +22,8 @@ Uses tree-sitter or regex-based parsing to extract:
 """
 
 from pathlib import Path
-from typing import Optional
 
-from entity_store.models import Entity, EntityType
+from entity_store.models import Entity
 
 
 class TypeScriptParser:

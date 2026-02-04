@@ -22,9 +22,9 @@ Extracts structured entities from Markdown files:
 
 import re
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
-from entity_store.models import Entity, EntityType
+from entity_store.models import Entity
 
 
 class MarkdownParser:
@@ -38,9 +38,7 @@ class MarkdownParser:
     # Patterns for Markdown elements
     FRONTMATTER_PATTERN = re.compile(r"^---\s*\n(.*?)\n---\s*\n", re.DOTALL)
     HEADING_PATTERN = re.compile(r"^(#{1,6})\s+(.+)$", re.MULTILINE)
-    CODE_BLOCK_PATTERN = re.compile(
-        r"```(\w*)\n(.*?)```", re.DOTALL | re.MULTILINE
-    )
+    CODE_BLOCK_PATTERN = re.compile(r"```(\w*)\n(.*?)```", re.DOTALL | re.MULTILINE)
 
     def __init__(self) -> None:
         """Initialize Markdown parser."""
@@ -72,9 +70,7 @@ class MarkdownParser:
         source = filepath.read_text()
         return self.parse(filepath, source)
 
-    def _extract_frontmatter(
-        self, source: str, filepath: str
-    ) -> tuple[Optional[Entity], str]:
+    def _extract_frontmatter(self, source: str, filepath: str) -> tuple[Entity | None, str]:
         """
         Extract YAML frontmatter as document entity.
 
@@ -87,9 +83,7 @@ class MarkdownParser:
         """
         raise NotImplementedError("_extract_frontmatter not yet implemented")
 
-    def _extract_headings(
-        self, source: str, filepath: str, start_line: int = 1
-    ) -> list[Entity]:
+    def _extract_headings(self, source: str, filepath: str, start_line: int = 1) -> list[Entity]:
         """
         Extract heading hierarchy as entities.
 
@@ -103,9 +97,7 @@ class MarkdownParser:
         """
         raise NotImplementedError("_extract_headings not yet implemented")
 
-    def _extract_code_blocks(
-        self, source: str, filepath: str, start_line: int = 1
-    ) -> list[Entity]:
+    def _extract_code_blocks(self, source: str, filepath: str, start_line: int = 1) -> list[Entity]:
         """
         Extract fenced code blocks as entities.
 
@@ -122,3 +114,6 @@ class MarkdownParser:
     def _parse_yaml(self, yaml_content: str) -> dict[str, Any]:
         """Parse YAML frontmatter content."""
         raise NotImplementedError("_parse_yaml not yet implemented")
+
+
+__all__ = ["MarkdownParser"]

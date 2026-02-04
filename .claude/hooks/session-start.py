@@ -22,18 +22,18 @@ This hook triggers on SessionStart event and:
 """
 
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 try:
-    from tqdm import tqdm
     from rich.console import Console
+    from tqdm import tqdm
 
     # Add entity_store to path
     sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-    from entity_store.registry import EntityRegistry
     from entity_store.neon_client import NeonClient
+    from entity_store.registry import EntityRegistry
 
     console = Console()
 except ImportError as e:
@@ -57,7 +57,7 @@ def main() -> None:
     # Check if index is fresh (< 1 hour old)
     try:
         last_update = neon.get_last_index_time(str(repo_root))
-        if last_update and (datetime.utcnow() - last_update) < timedelta(hours=1):
+        if last_update and (datetime.now(timezone.utc) - last_update) < timedelta(hours=1):
             console.print("[green]✓[/green] Entity index is fresh")
             return
     except NotImplementedError:
@@ -117,9 +117,7 @@ def main() -> None:
         except NotImplementedError:
             pass
 
-    console.print(
-        f"[green]✓[/green] Indexed {len(entities)} entities from {len(files)} files"
-    )
+    console.print(f"[green]✓[/green] Indexed {len(entities)} entities from {len(files)} files")
 
 
 if __name__ == "__main__":

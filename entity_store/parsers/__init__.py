@@ -46,9 +46,9 @@ def get_parser(filepath: Path) -> Parser:
     Raises:
         ValueError: If no parser available for file type
     """
+    from entity_store.parsers.markdown_parser import MarkdownParser
     from entity_store.parsers.python_parser import PythonParser
     from entity_store.parsers.typescript_parser import TypeScriptParser
-    from entity_store.parsers.markdown_parser import MarkdownParser
 
     suffix = filepath.suffix.lower()
 

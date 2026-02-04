@@ -36,7 +36,7 @@ Usage:
 
 from functools import lru_cache
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -64,28 +64,28 @@ class Settings(BaseSettings):
     )
 
     # === API Keys ===
-    parallel_apikey: Optional[str] = Field(
+    parallel_apikey: str | None = Field(
         default=None,
         description="API key for parallel Claude API usage",
     )
 
-    neon_api_key: Optional[str] = Field(
+    neon_api_key: str | None = Field(
         default=None,
         description="Neon PostgreSQL API key for MCP server",
     )
 
-    anthropic_api_key: Optional[str] = Field(
+    anthropic_api_key: str | None = Field(
         default=None,
         description="Anthropic API key (if using API directly)",
     )
 
-    github_token: Optional[str] = Field(
+    github_token: str | None = Field(
         default=None,
         description="GitHub token for API access",
     )
 
     # === Database ===
-    database_url: Optional[str] = Field(
+    database_url: str | None = Field(
         default=None,
         description="PostgreSQL connection string for Neon",
     )
@@ -141,6 +141,7 @@ class Settings(BaseSettings):
     def is_ci(self) -> bool:
         """Check if running in CI environment."""
         import os
+
         return bool(os.environ.get("CI") or os.environ.get("GITHUB_ACTIONS"))
 
     @property

@@ -21,7 +21,6 @@ Provides commands for:
 """
 
 from pathlib import Path
-from typing import Optional
 
 import click
 from rich.console import Console
@@ -68,10 +67,10 @@ def build_index(path: Path, force: bool) -> None:
 @click.option("--limit", "-l", type=int, default=100, help="Max results")
 @click.option("--json", "as_json", is_flag=True, help="Output as JSON")
 def query(
-    type_id: Optional[str],
-    name: Optional[str],
-    path: Optional[str],
-    fields: Optional[str],
+    type_id: str | None,
+    name: str | None,
+    path: str | None,
+    fields: str | None,
     limit: int,
     as_json: bool,
 ) -> None:
