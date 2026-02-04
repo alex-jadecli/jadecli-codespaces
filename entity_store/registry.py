@@ -21,7 +21,7 @@ Provides the main interface for:
 - Locking/unlocking entities for multi-agent collaboration
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from uuid import UUID
 
@@ -60,8 +60,17 @@ class EntityRegistry:
         Returns:
             List of Entity objects extracted from the file
         """
-        # Stub - implementation will dispatch to appropriate parser
-        raise NotImplementedError("parse_file not yet implemented")
+        from entity_store.parsers.python_parser import PythonParser
+
+        # Determine parser based on file extension
+        ext = filepath.suffix.lower()
+
+        if ext == ".py":
+            parser = PythonParser()
+            return parser.parse_file(filepath)
+        else:
+            # For now, only Python is supported
+            return []
 
     def register(self, entity: Entity) -> UUID:
         """
@@ -73,7 +82,9 @@ class EntityRegistry:
         Returns:
             UUID of the registered entity
         """
-        raise NotImplementedError("register not yet implemented")
+        entity_id = str(entity.entity_id)
+        self._entities[entity_id] = entity
+        return entity.entity_id
 
     def get(self, entity_id: UUID) -> Entity | None:
         """
@@ -85,7 +96,8 @@ class EntityRegistry:
         Returns:
             Entity if found, None otherwise
         """
-        raise NotImplementedError("get not yet implemented")
+        entity_id_str = str(entity_id)
+        return self._entities.get(entity_id_str)
 
     def filter(
         self,
@@ -106,7 +118,29 @@ class EntityRegistry:
         Returns:
             List of matching entities
         """
-        raise NotImplementedError("filter not yet implemented")
+        import fnmatch
+
+        results = []
+        for entity in self._entities.values():
+            # Filter by state
+            if entity.entity_state != state:
+                continue
+
+            # Filter by type
+            if type_id is not None and entity.entity_type_id != type_id:
+                continue
+
+            # Filter by name pattern
+            if name_pattern and not fnmatch.fnmatch(entity.entity_name, name_pattern):
+                continue
+
+            # Filter by path pattern
+            if path_pattern and not fnmatch.fnmatch(entity.entity_path, path_pattern):
+                continue
+
+            results.append(entity)
+
+        return results
 
     def update(self, entity_id: UUID, **fields) -> Entity:
         """
@@ -119,7 +153,26 @@ class EntityRegistry:
         Returns:
             Updated entity
         """
-        raise NotImplementedError("update not yet implemented")
+        entity_id_str = str(entity_id)
+        if entity_id_str not in self._entities:
+            raise KeyError(f"Entity not found: {entity_id}")
+
+        entity = self._entities[entity_id_str]
+
+        # Update fields
+        entity_data = entity.model_dump()
+        for key, value in fields.items():
+            if key in entity_data:
+                entity_data[key] = value
+
+        # Update last_updated timestamp
+        entity_data["entity_last_updated"] = datetime.now(UTC)
+
+        # Create updated entity
+        updated_entity = Entity(**entity_data)
+        self._entities[entity_id_str] = updated_entity
+
+        return updated_entity
 
     def archive(self, entity_id: UUID) -> None:
         """
@@ -128,7 +181,7 @@ class EntityRegistry:
         Args:
             entity_id: UUID of the entity to archive
         """
-        raise NotImplementedError("archive not yet implemented")
+        self.update(entity_id, entity_state=EntityState.ARCHIVED)
 
     def delete(self, entity_id: UUID) -> None:
         """
@@ -137,7 +190,11 @@ class EntityRegistry:
         Args:
             entity_id: UUID of the entity to delete
         """
-        raise NotImplementedError("delete not yet implemented")
+        entity_id_str = str(entity_id)
+        if entity_id_str in self._entities:
+            del self._entities[entity_id_str]
+        if entity_id_str in self._locks:
+            del self._locks[entity_id_str]
 
     # === New CRUD methods for in-memory entity store ===
 
@@ -161,7 +218,7 @@ class EntityRegistry:
 
         self._locks[entity_id] = {
             "locked_by": locked_by,
-            "locked_at": datetime.now(datetime.UTC),
+            "locked_at": datetime.now(UTC),
         }
         return True
 
@@ -310,7 +367,7 @@ class EntityRegistry:
                 entity_data[key] = value
 
         # Update last_updated timestamp
-        entity_data["entity_last_updated"] = datetime.now(datetime.UTC)
+        entity_data["entity_last_updated"] = datetime.now(UTC)
 
         # Create updated entity
         updated_entity = Entity(**entity_data)
@@ -329,7 +386,7 @@ class EntityRegistry:
                         for key, value in updates.items():
                             if key in frontmatter_data:
                                 frontmatter_data[key] = value
-                        last_updated = datetime.now(datetime.UTC).isoformat()
+                        last_updated = datetime.now(UTC).isoformat()
                         frontmatter_data["entity_last_updated"] = last_updated
 
                         # Regenerate frontmatter and replace in file

@@ -23,7 +23,7 @@ Uses Python's built-in ast module to extract:
 import ast
 from pathlib import Path
 
-from entity_store.models import Entity
+from entity_store.models import Entity, EntityType
 
 
 class PythonEntityExtractor(ast.NodeVisitor):
@@ -54,23 +54,100 @@ class PythonEntityExtractor(ast.NodeVisitor):
         Returns:
             List of extracted Entity objects
         """
-        raise NotImplementedError("extract not yet implemented")
+        tree = ast.parse(self.source)
+        self.visit(tree)
+        return self.entities
 
     def visit_ClassDef(self, node: ast.ClassDef) -> None:
         """Extract entity from class definition."""
-        raise NotImplementedError("visit_ClassDef not yet implemented")
+        docstring = ast.get_docstring(node)
+
+        entity = Entity(
+            entity_name=node.name,
+            entity_type_id=EntityType.CLASS,
+            entity_path=self.filepath,
+            entity_line_start=node.lineno,
+            entity_line_end=node.end_lineno,
+            entity_language="python",
+            entity_docstring=docstring,
+            entity_parent_id=self._get_parent_id(),
+        )
+
+        self.entities.append(entity)
+        self.parent_stack.append(entity)
+        self.generic_visit(node)
+        self.parent_stack.pop()
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
         """Extract entity from function/method definition."""
-        raise NotImplementedError("visit_FunctionDef not yet implemented")
+        docstring = ast.get_docstring(node)
+        signature = self._get_signature(node)
+
+        # Determine if this is a method (inside a class) or a function
+        is_method = bool(self.parent_stack)
+        entity_type = EntityType.METHOD if is_method else EntityType.FUNCTION
+
+        entity = Entity(
+            entity_name=node.name,
+            entity_type_id=entity_type,
+            entity_path=self.filepath,
+            entity_line_start=node.lineno,
+            entity_line_end=node.end_lineno,
+            entity_language="python",
+            entity_signature=signature,
+            entity_docstring=docstring,
+            entity_parent_id=self._get_parent_id(),
+        )
+
+        self.entities.append(entity)
+        # Don't traverse into function body (we don't want nested functions for now)
+        # self.generic_visit(node)
 
     def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> None:
         """Extract entity from async function/method definition."""
-        raise NotImplementedError("visit_AsyncFunctionDef not yet implemented")
+        docstring = ast.get_docstring(node)
+        signature = self._get_signature(node)
+
+        # Determine if this is a method (inside a class) or a function
+        is_method = bool(self.parent_stack)
+        entity_type = EntityType.METHOD if is_method else EntityType.FUNCTION
+
+        entity = Entity(
+            entity_name=node.name,
+            entity_type_id=entity_type,
+            entity_path=self.filepath,
+            entity_line_start=node.lineno,
+            entity_line_end=node.end_lineno,
+            entity_language="python",
+            entity_signature=signature,
+            entity_docstring=docstring,
+            entity_parent_id=self._get_parent_id(),
+        )
+
+        self.entities.append(entity)
+        # Don't traverse into function body
 
     def _get_signature(self, node: ast.FunctionDef | ast.AsyncFunctionDef) -> str:
         """Extract function signature string."""
-        raise NotImplementedError("_get_signature not yet implemented")
+        # Build argument list
+        args_parts = []
+
+        # Regular arguments
+        for arg in node.args.args:
+            arg_str = arg.arg
+            if arg.annotation:
+                arg_str += f": {ast.unparse(arg.annotation)}"
+            args_parts.append(arg_str)
+
+        # Build return type
+        returns = ""
+        if node.returns:
+            returns = f" -> {ast.unparse(node.returns)}"
+
+        # Async prefix
+        prefix = "async " if isinstance(node, ast.AsyncFunctionDef) else ""
+
+        return f"{prefix}def {node.name}({', '.join(args_parts)}){returns}"
 
     def _get_parent_id(self) -> str | None:
         """Get parent entity ID from stack."""

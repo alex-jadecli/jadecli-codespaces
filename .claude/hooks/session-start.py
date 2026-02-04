@@ -60,8 +60,8 @@ def main() -> None:
         if last_update and (datetime.now(UTC) - last_update) < timedelta(hours=1):
             console.print("[green]✓[/green] Entity index is fresh")
             return
-    except NotImplementedError:
-        # Stub implementation - skip freshness check
+    except (NotImplementedError, TypeError):
+        # Stub implementation or async method - skip freshness check
         pass
 
     console.print("[cyan]Building entity index...[/cyan]")
@@ -106,14 +106,20 @@ def main() -> None:
 
         for entity in tqdm(entities, desc="Uploading entities", unit="entity"):
             try:
-                neon.upsert_entity(entity)
+                result = neon.upsert_entity(entity)
+                # If async, skip (coroutine won't execute)
+                if hasattr(result, '__await__'):
+                    break  # Exit loop - async not supported yet
             except NotImplementedError:
                 # Stub implementation
-                pass
+                break
 
         # Update index timestamp
         try:
-            neon.set_last_index_time(str(repo_root))
+            result = neon.set_last_index_time(str(repo_root))
+            # If async, skip
+            if hasattr(result, '__await__'):
+                pass
         except NotImplementedError:
             pass
 
