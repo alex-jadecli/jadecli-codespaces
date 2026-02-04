@@ -539,6 +539,123 @@ async def get_findall_result(
         )
 
 
+# === Task Dispatch Endpoints (jade-dev-assist integration) ===
+
+
+class TaskDispatchBody(BaseModel):
+    """Task dispatch request for worker agents."""
+
+    task_id: str | None = None
+    project: str
+    task_description: str
+    priority: int = Field(default=1, ge=1, le=5)
+    max_turns: int = Field(default=25, ge=1, le=50)
+
+
+class TaskStatusResponse(BaseModel):
+    """Task status response."""
+
+    task_id: str
+    status: str  # pending, running, completed, failed, cancelled
+    project: str
+    created_at: str
+    started_at: str | None = None
+    completed_at: str | None = None
+    result: dict[str, Any] | None = None
+    error: str | None = None
+
+
+# In-memory task store (replace with database later)
+_task_store: dict[str, dict[str, Any]] = {}
+
+
+@app.post("/tasks/dispatch", response_model=TaskStatusResponse)
+async def dispatch_task(body: TaskDispatchBody) -> TaskStatusResponse:
+    """
+    Dispatch a task to a worker agent.
+
+    This endpoint creates a task for execution by a jade-dev-assist worker.
+    The task will be queued and executed asynchronously.
+    """
+    import uuid
+    from datetime import UTC, datetime
+
+    task_id = body.task_id or str(uuid.uuid4())
+
+    # Create task record
+    task = {
+        "task_id": task_id,
+        "status": "pending",
+        "project": body.project,
+        "task_description": body.task_description,
+        "priority": body.priority,
+        "max_turns": body.max_turns,
+        "created_at": datetime.now(UTC).isoformat(),
+        "started_at": None,
+        "completed_at": None,
+        "result": None,
+        "error": None,
+    }
+
+    _task_store[task_id] = task
+
+    return TaskStatusResponse(**task)
+
+
+@app.get("/tasks/{task_id}/status", response_model=TaskStatusResponse)
+async def get_task_status(task_id: str) -> TaskStatusResponse:
+    """
+    Get the status of a dispatched task.
+
+    Returns current status and results if completed.
+    """
+    task = _task_store.get(task_id)
+
+    if not task:
+        raise APIException(
+            status_code=404,
+            detail=f"Task not found: {task_id}",
+            param="task_id",
+            code="task_not_found",
+        )
+
+    return TaskStatusResponse(**task)
+
+
+@app.post("/tasks/{task_id}/cancel")
+async def cancel_task(task_id: str) -> dict[str, Any]:
+    """
+    Cancel a running task.
+
+    This will attempt to gracefully stop the worker agent.
+    """
+    task = _task_store.get(task_id)
+
+    if not task:
+        raise APIException(
+            status_code=404,
+            detail=f"Task not found: {task_id}",
+            param="task_id",
+            code="task_not_found",
+        )
+
+    if task["status"] in ("completed", "failed", "cancelled"):
+        raise APIException(
+            status_code=400,
+            detail=f"Cannot cancel task in {task['status']} state",
+            param="task_id",
+            code="invalid_task_state",
+        )
+
+    task["status"] = "cancelled"
+
+    from datetime import UTC, datetime
+
+    task["completed_at"] = datetime.now(UTC).isoformat()
+
+    return {"cancelled": True, "task_id": task_id, "status": task["status"]}
+
+
 # === Main Entry Point ===
 
 
