@@ -6,7 +6,8 @@
 # entity_language: python
 # entity_state: active
 # entity_created: 2026-01-22T17:00:00Z
-# entity_exports: [ArchitectureTree, SequenceDiagram, DependencyGraph, generate_ascii_tree, generate_sequence_diagram]
+# entity_exports: [ArchitectureTree, SequenceDiagram, DependencyGraph]
+# entity_exports_continued: [generate_ascii_tree, generate_sequence_diagram]
 # entity_dependencies: [frontmatter, models, registry]
 # entity_callers: [cli, hooks, coderabbit]
 # entity_callees: [frontmatter]
@@ -198,14 +199,6 @@ def generate_sequence_diagram(
     messages: list[SequenceMessage] = []
 
     for entity in entities:
-        entity_actor = "claude"  # Default actor for entities
-
-        # Map entity actors
-        if Actor.DEV in entity.entity_actors:
-            entity_actor = "dev"
-        elif Actor.USER in entity.entity_actors:
-            entity_actor = "user"
-
         # Add calls to callees
         for callee_id in entity.entity_callees:
             messages.append(

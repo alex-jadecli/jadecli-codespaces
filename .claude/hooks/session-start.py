@@ -22,7 +22,7 @@ This hook triggers on SessionStart event and:
 """
 
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 try:
@@ -57,7 +57,7 @@ def main() -> None:
     # Check if index is fresh (< 1 hour old)
     try:
         last_update = neon.get_last_index_time(str(repo_root))
-        if last_update and (datetime.now(timezone.utc) - last_update) < timedelta(hours=1):
+        if last_update and (datetime.now(UTC) - last_update) < timedelta(hours=1):
             console.print("[green]✓[/green] Entity index is fresh")
             return
     except NotImplementedError:

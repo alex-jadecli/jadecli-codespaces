@@ -113,9 +113,9 @@ def show(entity_id: str) -> None:
 
 
 @cli.command()
-def stats() -> None:
+def store_stats() -> None:
     """Show entity store statistics."""
-    raise NotImplementedError("stats not yet implemented")
+    raise NotImplementedError("store_stats not yet implemented")
 
 
 def _display_table(entities: list[dict], fields: list[str]) -> None:
