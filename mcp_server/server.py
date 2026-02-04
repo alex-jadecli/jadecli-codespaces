@@ -501,9 +501,18 @@ def explain_code_prompt(
         detail_level: Level of detail (beginner, intermediate, advanced)
     """
     detail_instructions = {
-        "beginner": "Use simple terms and explain every concept. Assume no prior programming knowledge.",
-        "intermediate": "Explain the logic and patterns used. Assume basic programming knowledge.",
-        "advanced": "Focus on design decisions, trade-offs, and edge cases. Assume expert knowledge.",
+        "beginner": (
+            "Use simple terms and explain every concept. "
+            "Assume no prior programming knowledge."
+        ),
+        "intermediate": (
+            "Explain the logic and patterns used. "
+            "Assume basic programming knowledge."
+        ),
+        "advanced": (
+            "Focus on design decisions, trade-offs, and edge cases. "
+            "Assume expert knowledge."
+        ),
     }
 
     instruction = detail_instructions.get(detail_level, detail_instructions["intermediate"])
@@ -632,7 +641,8 @@ Please provide:
 3. **Solution**: How can this error be fixed?
 4. **Prevention**: How can similar errors be prevented in the future?
 
-If you need more information to diagnose the issue, please specify what additional context would be helpful."""
+If you need more information to diagnose the issue, please specify what
+additional context would be helpful."""
 
 
 @mcp.prompt(

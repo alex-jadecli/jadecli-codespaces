@@ -18,7 +18,7 @@ the entity indexing system.
 """
 
 import hashlib
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
 from uuid import UUID, uuid4
 
@@ -63,9 +63,9 @@ class Entity(BaseModel):
     entity_name: str = Field(..., min_length=1)
     entity_type_id: EntityType
     entity_frontmatter_signature: str = Field(default="")
-    entity_last_updated: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    entity_last_updated: datetime = Field(default_factory=lambda: datetime.now(UTC))
     entity_state: EntityState = EntityState.ACTIVE
-    entity_created: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    entity_created: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     # Extended fields
     entity_path: str = Field(..., min_length=1)
