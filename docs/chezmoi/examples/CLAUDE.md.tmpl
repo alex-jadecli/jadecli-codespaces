@@ -1,0 +1,69 @@
+# Claude User Memory
+
+> Personal preferences and context for Claude Code sessions.
+
+## About Me
+
+- **Username:** {{ .chezmoi.username }}
+- **Machine:** {{ .chezmoi.hostname }}
+- **OS:** {{ .chezmoi.os }}
+{{- if .work_machine }}
+- **Environment:** Work
+{{- else }}
+- **Environment:** Personal
+{{- end }}
+
+## Preferences
+
+### Communication Style
+- Be concise and direct
+- Use code examples when explaining concepts
+- Prefer bullet points over long paragraphs
+
+### Technical Preferences
+{{- if .preferred_languages }}
+- **Languages:** {{ .preferred_languages | join ", " }}
+{{- else }}
+- **Languages:** TypeScript, Python, Go
+{{- end }}
+{{- if .preferred_editor }}
+- **Editor:** {{ .preferred_editor }}
+{{- else }}
+- **Editor:** VS Code
+{{- end }}
+- **Package Manager:** {{ .package_manager | default "npm" }}
+
+### Code Style
+- Use 2-space indentation for JS/TS
+- Use 4-space indentation for Python
+- Prefer functional programming patterns
+- Always include error handling
+
+{{- if .work_machine }}
+
+## Work Context
+
+- Follow company coding standards
+- Use approved libraries only
+- Include proper documentation
+- Run tests before committing
+{{- end }}
+
+## Quick Reference
+
+Common commands I use:
+- `/init` - Initialize project memory
+- `/memory` - Edit memory files
+- `/config` - Open settings
+- `/output-style` - Switch output style
+
+## Projects
+
+{{- if .active_projects }}
+### Active Projects
+{{- range .active_projects }}
+- {{ . }}
+{{- end }}
+{{- else }}
+<!-- Add your active projects here -->
+{{- end }}

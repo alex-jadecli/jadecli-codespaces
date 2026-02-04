@@ -1,0 +1,36 @@
+{
+  "mcpServers": {
+{{- $first := true }}
+{{- if .mcp_servers.filesystem }}
+{{- if or (eq .chezmoi.os "darwin") (eq .chezmoi.os "linux") }}
+{{- if not $first }},{{ end }}
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@anthropic/mcp-filesystem", "{{ .chezmoi.homeDir }}"]
+    }
+{{- $first = false }}
+{{- end }}
+{{- end }}
+{{- if .mcp_servers.github }}
+{{- if not $first }},{{ end }}
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@anthropic/mcp-github"],
+      "env": {
+        "GITHUB_TOKEN": "{{ .github_token | default "${GITHUB_TOKEN}" }}"
+      }
+    }
+{{- $first = false }}
+{{- end }}
+{{- if .mcp_servers.brave_search }}
+{{- if not $first }},{{ end }}
+    "brave-search": {
+      "command": "npx",
+      "args": ["-y", "@anthropic/mcp-brave-search"],
+      "env": {
+        "BRAVE_API_KEY": "{{ .brave_api_key | default "${BRAVE_API_KEY}" }}"
+      }
+    }
+{{- end }}
+  }
+}

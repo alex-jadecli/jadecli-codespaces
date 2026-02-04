@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat *)",
+      "Bash(ls *)",
+      "Bash(grep *)",
+      "Read"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./secrets/**)"
+    ]
+  }
+{{- if .work_machine }},
+  "model": "{{ .claude_model | default "claude-sonnet-4-20250514" }}",
+  "env": {
+    "WORK_ENVIRONMENT": "true",
+    "COMPANY_PROXY": "{{ .company_proxy | default "" }}"
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit",
+        "command": ["prettier", "--write", "$file"]
+      }
+    ]
+  }
+{{- else }},
+  "model": "{{ .claude_model | default "claude-sonnet-4-20250514" }}"
+{{- end }}
+}

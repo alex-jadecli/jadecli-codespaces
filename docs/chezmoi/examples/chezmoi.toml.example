@@ -1,0 +1,41 @@
+# Example Chezmoi Configuration for Claude Code
+# Location: ~/.config/chezmoi/chezmoi.toml
+
+# Source directory for dotfiles
+# sourceDir = "~/.local/share/chezmoi"
+
+# Merge tool for conflicts
+# [merge]
+# command = "code"
+# args = ["--wait", "--diff", "{{ .Destination }}", "{{ .Source }}"]
+
+# Template data for Claude Code configuration
+[data]
+# Claude Code settings
+claude_model = "claude-sonnet-4-20250514"
+work_machine = false
+
+# Preferred tools
+preferred_languages = ["TypeScript", "Python", "Go"]
+preferred_editor = "VS Code"
+package_manager = "npm"
+
+# MCP server toggles
+[data.mcp_servers]
+filesystem = true
+github = true
+brave_search = false
+
+# Active projects (optional)
+# active_projects = ["project-alpha", "project-beta"]
+
+# Work-specific settings - add these to the [data] section above:
+# work_machine = true
+# company_proxy = "http://proxy.example.com:8080"
+
+# Machine-specific overrides using Chezmoi's built-in variables:
+# {{ .chezmoi.hostname }} - Machine hostname
+# {{ .chezmoi.os }} - Operating system (darwin, linux, windows)
+# {{ .chezmoi.arch }} - CPU architecture (amd64, arm64)
+# {{ .chezmoi.username }} - Current username
+# {{ .chezmoi.homeDir }} - Home directory path
