@@ -307,6 +307,35 @@ Every code file should have frontmatter with dependency tracking:
 
 ---
 
+## Documentation Indexing System
+
+### Overview
+
+Semantic search over local docs (anthropic, guides, platform-claude, ruff, ty, uv, wslg, chezmoi) using:
+- Embeddings via Anthropic API (cached in Redis)
+- Vector similarity search in Dragonfly
+- Automatic indexing on session start
+
+### Usage
+
+**Search docs:**
+```bash
+doc-index search "your query" --top-k 5
+```
+
+**Or use `/doc-lookup` skill** in Claude sessions.
+
+### Benefits for Claude
+
+1. **No guessing**: Search docs before answering
+2. **Token savings**: Cached embeddings, no repeated API calls
+3. **Accurate answers**: Cite actual documentation
+4. **Fast**: <100ms vector search
+
+See `doc_index/README.md` for details.
+
+---
+
 ## Conventional Commits & Semver
 
 ### Commit Format

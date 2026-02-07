@@ -1,0 +1,61 @@
+# ---
+# entity_id: config-wsl-conf-example
+# entity_name: Ubuntu WSL Configuration Template
+# entity_type_id: config
+# entity_path: research/jade-ide/config/wsl.conf.example
+# entity_language: ini
+# entity_state: active
+# entity_created: 2026-01-23T00:00:00Z
+# entity_actors: [dev]
+# ---
+
+# Ubuntu WSL Configuration for Jade IDE Development
+# Location: /etc/wsl.conf (Ubuntu side)
+# Apply changes with: wsl --shutdown (from Windows)
+
+[boot]
+# Enable systemd (required for Ollama service)
+systemd=true
+
+# Custom startup command
+# command = /usr/local/bin/jade-startup.sh
+
+[user]
+# Default user (uncomment and set if needed)
+# default=jade
+
+[automount]
+# Mount Windows drives under /mnt
+enabled=true
+root=/mnt/
+
+# Mount options for Windows drives
+options="metadata,umask=22,fmask=11"
+
+# Don't mount Windows drives by default (opt-in)
+# mountFsTab=true
+
+[interop]
+# Enable running Windows executables
+enabled=true
+
+# Don't append Windows PATH (cleaner Linux environment)
+appendWindowsPath=false
+
+[network]
+# Generate /etc/resolv.conf automatically
+generateResolvConf=true
+
+# Hostname (uncomment to customize)
+# hostname=jade-dev
+
+# Generate /etc/hosts automatically
+generateHosts=true
+
+[filesystem]
+# Case sensitivity (per-directory)
+# Enable with: fsutil.exe file setCaseSensitiveInfo <path> enable
+
+[gpu]
+# GPU support (for CUDA/Ollama)
+# Requires driver support from NVIDIA

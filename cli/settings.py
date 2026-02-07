@@ -131,6 +131,70 @@ class Settings(BaseSettings):
         description="Logging level",
     )
 
+    # === Ollama Configuration ===
+    ollama_host: str = Field(
+        default="http://localhost:11434",
+        description="Ollama server URL",
+    )
+
+    ollama_default_model: str = Field(
+        default="codellama:7b",
+        description="Default Ollama model for code tasks",
+    )
+
+    ollama_embedding_model: str = Field(
+        default="nomic-embed-text",
+        description="Ollama model for embeddings",
+    )
+
+    ollama_num_ctx: int = Field(
+        default=4096,
+        ge=512,
+        le=32768,
+        description="Ollama context window size",
+    )
+
+    ollama_timeout_seconds: int = Field(
+        default=60,
+        ge=10,
+        le=300,
+        description="Ollama request timeout",
+    )
+
+    # === Multi-Agent Orchestration ===
+    agent_prefer_ollama: bool = Field(
+        default=True,
+        description="Prefer Ollama for supported tasks",
+    )
+
+    agent_quality_threshold: float = Field(
+        default=0.7,
+        ge=0.0,
+        le=1.0,
+        description="Minimum quality threshold for Ollama routing",
+    )
+
+    agent_enable_fallback: bool = Field(
+        default=True,
+        description="Enable fallback from Ollama to Claude",
+    )
+
+    agent_track_tokens: bool = Field(
+        default=True,
+        description="Track token usage for optimization",
+    )
+
+    # === Machine Identification ===
+    machine_id: Optional[str] = Field(
+        default=None,
+        description="Unique identifier for this machine",
+    )
+
+    agent_id_prefix: str = Field(
+        default="wsl",
+        description="Prefix for agent IDs",
+    )
+
     @field_validator("entity_index_path", mode="before")
     @classmethod
     def parse_path(cls, v: str | Path) -> Path:
@@ -153,6 +217,20 @@ class Settings(BaseSettings):
     def has_database(self) -> bool:
         """Check if database is configured."""
         return bool(self.database_url or self.neon_api_key)
+
+    @property
+    def has_ollama(self) -> bool:
+        """Check if Ollama is configured (assumes local availability)."""
+        return bool(self.ollama_host)
+
+    @property
+    def agent_id(self) -> str:
+        """Generate unique agent ID for this machine."""
+        import hashlib
+        import platform
+        machine = self.machine_id or platform.node()
+        hash_suffix = hashlib.md5(machine.encode()).hexdigest()[:6]
+        return f"{self.agent_id_prefix}-{hash_suffix}"
 
 
 @lru_cache

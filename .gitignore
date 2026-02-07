@@ -96,3 +96,7 @@ CLAUDE.local.md
 *.key
 credentials.json
 secrets.json
+
+# Dotfiles local layer (machine-specific)
+dotfiles/local/
+!dotfiles/local/.env.local.example

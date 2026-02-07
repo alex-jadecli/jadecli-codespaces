@@ -126,5 +126,54 @@ def main() -> None:
     console.print(f"[green]✓[/green] Indexed {len(entities)} entities from {len(files)} files")
 
 
+def index_documentation():
+    """Index local documentation if needed."""
+    try:
+        from doc_index.indexer import DocumentIndexer
+    except ImportError:
+        # doc_index not installed yet
+        return
+
+    docs_root = Path.home() / "projects" / "jadecli-codespaces" / "docs"
+
+    if not docs_root.exists():
+        return
+
+    console.print("[blue]Checking documentation index...[/blue]")
+
+    try:
+        indexer = DocumentIndexer(index_name="jadecli_docs")
+        stats = indexer.get_stats()
+
+        if stats["total_chunks"] == 0:
+            console.print("[yellow]Indexing documentation (first run)...[/yellow]")
+
+            # Index specific doc directories
+            doc_dirs = [
+                "anthropic",
+                "guides",
+                "platform-claude",
+                "ruff",
+                "ty",
+                "uv",
+                "wslg",
+                "chezmoi",
+            ]
+
+            total_chunks = 0
+            for doc_dir in doc_dirs:
+                dir_path = docs_root / doc_dir
+                if dir_path.exists():
+                    count = indexer.index_directory(dir_path)
+                    total_chunks += count
+
+            console.print(f"[green]✓[/green] Indexed {total_chunks} chunks")
+        else:
+            console.print(f"[green]✓[/green] Documentation index ready ({stats['total_chunks']} chunks)")
+    except Exception as e:
+        console.print(f"[yellow]Warning:[/yellow] Could not index documentation: {e}")
+
+
 if __name__ == "__main__":
     main()
+    index_documentation()
